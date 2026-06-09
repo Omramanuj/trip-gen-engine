@@ -111,7 +111,7 @@ export function CodeEditorRenderer({
     <div>
       {prompt && <h2 className="text-h2 mb-4 whitespace-pre-line">{prompt}</h2>}
 
-      <div className="h-[70vh] min-h-[480px] overflow-hidden rounded-xl border border-ink-200 bg-[#1e1e1e] shadow-md">
+      <div className="cce-scope h-[70vh] min-h-[480px] overflow-hidden rounded-xl border border-ink-200 bg-[#1e1e1e] shadow-md">
         <EditorLayout config={config} />
       </div>
 

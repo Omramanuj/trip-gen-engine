@@ -3,8 +3,13 @@
    and the exports map blocks deep-importing dist/index.css. Re-copy on package upgrade. */
 @import "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Fira+Code:wght@400;500;600&display=swap";
 
+/* Scoped under .cce-scope so the package's page-level globals (body/:root/*
+   resets that paint the canvas black) can't leak past the editor container.
+   Native CSS nesting (Tailwind v4 / Lightning CSS) prefixes every nested rule. */
+.cce-scope {
+
 /* src/styles/globals.css */
-:root {
+& {
   --background: #000000;
   --foreground: #c9d1d9;
   --editor-background: #1a1a1a;
@@ -14,7 +19,7 @@
   margin: 0;
   padding: 0;
 }
-body {
+& {
   color: var(--foreground);
   background: var(--background);
   font-family:
@@ -262,3 +267,4 @@ code {
 
 /* src/styles/index.css */
 /*# sourceMappingURL=index.css.map */
+} /* end .cce-scope */
