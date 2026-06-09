@@ -3,9 +3,9 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { Trip } from "./types";
 
-// The generated trips live one level up, in trip-gen-engine/output/*.json.
-// `npm run dev` runs from preview/, so cwd is .../trip-gen-engine/preview.
-const OUTPUT_DIR = path.join(process.cwd(), "..", "output");
+// The generated trips are bundled into the app at preview/output/*.json so they
+// deploy with the repo and are available to serverless functions at runtime.
+const OUTPUT_DIR = path.join(process.cwd(), "output");
 
 export interface TripSummary {
   slug: string; // filename without .json

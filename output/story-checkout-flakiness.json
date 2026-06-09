@@ -1,0 +1,633 @@
+{
+  "schema_version": "story.v1",
+  "story_premise": "Checkout has been silently failing for some shoppers since Friday's deploy — one ticket, traced from a vague founder DM to the lying cast that breaks it, fixed under a live deadline.",
+  "trip_meta": {
+    "domain": "consumer e-commerce (small DTC storefront)",
+    "role": "Fresher / early-career AI-augmented full-stack engineer",
+    "target_band": "1",
+    "target_rung": "r2",
+    "stack": "nextjs_ts_supabase",
+    "total_time_cap_seconds": 4020,
+    "open_time_gate": "G4"
+  },
+  "founder_persona": {
+    "name": "Maya",
+    "company": "Sprig",
+    "role": "Non-technical solo founder",
+    "voice_note": "Texts in lowercase, friendly, non-technical. Answers only what's literally asked; never volunteers a constraint unless probed.",
+    "avatar_seed": "maya-sprig"
+  },
+  "shared_payload": {
+    "ticket": {
+      "id": "TKT-4471",
+      "title": "Checkout sometimes fails",
+      "body_vague": "hey! checkout's been flaky since the weekend — some people say they hit pay and nothing happens. a few orders def came through fine though. can you look before it costs us more sales? 🙏",
+      "reporter_is_founder": true
+    },
+    "codebase_slice": {
+      "files": [
+        {
+          "path": "types.ts",
+          "language": "typescript",
+          "content": "export type CartItem = { id: string; price_cents: number; qty: number };\n\n// A cart row as it comes back from Supabase. `discount_pct` was added in Friday's\n// migration and is NULLABLE — carts created before the deploy have null here.\nexport type CartRow = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number | null;\n};\n\n// The app-side cart the rest of the code works with. Note: discount_pct is non-null here.\nexport type Cart = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number;\n};\n"
+        },
+        {
+          "path": "adapter.ts",
+          "language": "typescript",
+          "content": "import type { CartRow, Cart } from \"./types\";\n\n// Adapts a raw Supabase row into the app Cart shape.\nexport function adaptCart(row: CartRow): Cart {\n  return {\n    id: row.id,\n    user_id: row.user_id,\n    items: row.items,\n    // The column is nullable, but we assert it is a number. This typechecks green;\n    // for carts created before Friday's deploy discount_pct is actually null.\n    discount_pct: row.discount_pct as number,\n  };\n}\n"
+        },
+        {
+          "path": "total.ts",
+          "language": "typescript",
+          "content": "import type { Cart } from \"./types\";\n\nexport function subtotalCents(cart: Cart): number {\n  return cart.items.reduce((sum, it) => sum + it.price_cents * it.qty, 0);\n}\n\n// Final total in cents after the cart's discount.\nexport function cartTotalCents(cart: Cart): number {\n  const sub = subtotalCents(cart);\n  // Normalise the percent to two places before applying it. Looks lossy but is correct to the cent.\n  const rate = Number(cart.discount_pct.toFixed(2)) / 100;\n  return Math.round(sub * (1 - rate));\n}\n"
+        },
+        {
+          "path": "checkout.ts",
+          "language": "typescript",
+          "content": "import type { CartRow } from \"./types\";\nimport { adaptCart } from \"./adapter\";\nimport { cartTotalCents } from \"./total\";\n\nexport type CheckoutResult =\n  | { ok: true; total_cents: number }\n  | { ok: false; reason: string };\n\nexport function processCheckout(row: CartRow): CheckoutResult {\n  const cart = adaptCart(row);\n  // Empty carts can't check out.\n  if (cart.items.length === 0) return { ok: false, reason: \"empty_cart\" };\n  try {\n    const total = cartTotalCents(cart);\n    if (!Number.isFinite(total)) return { ok: false, reason: \"bad_total\" };\n    return { ok: true, total_cents: total };\n  } catch {\n    // Some carts blow up here and the user just sees the button spin forever.\n    return { ok: false, reason: \"checkout_error\" };\n  }\n}\n"
+        }
+      ],
+      "entry_points": [
+        "checkout.ts:processCheckout"
+      ],
+      "_injected_flaws": [
+        {
+          "id": "F1",
+          "file": "adapter.ts",
+          "line_hint": "discount_pct: row.discount_pct as number",
+          "kind": "lying_cast",
+          "the_tell": "Checkout throws/fails ONLY for carts with no discount (discount_pct is null); carts with a discount succeed. The cast hides a null the rest of the code treats as a number.",
+          "why_cross_file": "adapter.ts asserts non-null; total.ts calls a number method on it (typechecks); checkout.ts catches the throw and fails silently — the cause is in none of those single files alone, only their relationship."
+        }
+      ]
+    },
+    "hidden_facts": [
+      {
+        "rank": 1,
+        "fact": "It started right after Friday's deploy, which shipped a new 'launch discount' feature (a migration added a discount_pct column).",
+        "why_it_changes_the_approach": "Points the investigation at the new nullable column and the deploy, not at the payment provider or the checkout API.",
+        "surfacing_questions": [
+          "When did this start / did anything ship recently?",
+          "What changed in Friday's deploy?",
+          "Did we add any new fields to carts or orders?"
+        ]
+      },
+      {
+        "rank": 2,
+        "fact": "It only affects carts with NO discount applied (~12% of checkouts). Carts that have a discount code go through fine.",
+        "why_it_changes_the_approach": "Isolates the failing variant to null discount_pct — the exact value the migration leaves on older/unmodified carts.",
+        "surfacing_questions": [
+          "Is it everyone or only some carts?",
+          "Do the failing carts have anything in common?",
+          "Are discounted orders affected too?"
+        ]
+      },
+      {
+        "rank": 3,
+        "fact": "Only logged-in shoppers with a saved cart hit it. Guest checkout works fine.",
+        "why_it_changes_the_approach": "Narrows it to the saved-cart read path (the adapter), not the guest/ad-hoc checkout path.",
+        "surfacing_questions": [
+          "Does it happen for guests or only logged-in users?",
+          "Is it the saved cart or a fresh one?"
+        ]
+      },
+      {
+        "rank": 4,
+        "fact": "It fails silently — the pay button just spins, no error message is shown to the shopper.",
+        "why_it_changes_the_approach": "Tells you the error is caught and swallowed (a try/catch returning a generic failure), so logs/Sentry won't show a thrown error at the surface.",
+        "surfacing_questions": [
+          "What does the shopper actually see when it fails?",
+          "Is there any error in the logs?"
+        ]
+      }
+    ]
+  },
+  "gates": [
+    {
+      "id": "G1",
+      "method": "restate_probe",
+      "title": "Maya sent over a ticket",
+      "time_cap_seconds": 300,
+      "ambient_tint": "sky",
+      "candidate_facing_content": {
+        "blocks": [
+          {
+            "interaction_type": "display",
+            "body_json": {
+              "prompt": "Maya (founder, Sprig) just dropped a ticket in your DMs. It's half-baked. She's around to answer — but she'll only tell you what you actually ask.",
+              "subtitle": "TKT-4471 · Checkout sometimes fails",
+              "blocks": [
+                "hey! checkout's been flaky since the weekend — some people say they hit pay and nothing happens. a few orders def came through fine though. can you look before it costs us more sales? 🙏"
+              ]
+            }
+          },
+          {
+            "interaction_type": "voice_exchange",
+            "body_json": {
+              "prompt": "Restate the ticket in your own words, then ask Maya whatever you need before you propose anything.",
+              "turn_mode": "multi_turn",
+              "max_turns": 5,
+              "persona": {
+                "name": "Maya",
+                "style": "Non-technical solo founder. Lowercase, friendly. Answers ONLY what is literally asked. Never volunteers a hidden fact; a vague question gets a vague answer, a sharp targeted question reveals the matching fact."
+              },
+              "first_turn_chips": [
+                "When did this start?",
+                "Is it all shoppers or only some?",
+                "What does the shopper see when it fails?"
+              ]
+            }
+          }
+        ]
+      },
+      "hidden_state": {
+        "hidden_facts_ref": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "checklist": [
+          {
+            "fact_rank": 1,
+            "surfacing_questions": [
+              "when did this start",
+              "friday deploy",
+              "what changed",
+              "new field"
+            ]
+          },
+          {
+            "fact_rank": 2,
+            "surfacing_questions": [
+              "all or some",
+              "failing carts in common",
+              "discounted orders affected"
+            ]
+          },
+          {
+            "fact_rank": 3,
+            "surfacing_questions": [
+              "guest or logged in",
+              "saved cart"
+            ]
+          },
+          {
+            "fact_rank": 4,
+            "surfacing_questions": [
+              "what does the shopper see",
+              "error in logs"
+            ]
+          }
+        ],
+        "yield_total": 4
+      },
+      "scoring_rubric": {
+        "grading_mode": "Banded",
+        "distinguishing_observable": "Did they surface the #1 fact (it started with Friday's deploy / the new discount column) unprompted, and order their questions by impact rather than volume?",
+        "rubric_exemplars": {
+          "below": "Says 'so checkout is broken, I'll look at the payment integration' and asks nothing, or only cosmetic questions Maya already answered.",
+          "meets": "Restates the flakiness accurately and asks at least one question on genuinely missing info, e.g. 'is it all shoppers or only some?'",
+          "above": "Restates AND probes the deploy first ('what changed Friday?'), then narrows the variant ('do the failing carts share anything — discount vs no discount?') — questions ordered by leverage."
+        }
+      },
+      "ai_floor": "An AI summarises the ticket and suggests generic checkout debugging. It will not, unprompted, connect the timing to Friday's deploy or single out the no-discount cart variant — that connection is the signal.",
+      "unlocks": "G2",
+      "narrative_handoff": "okay you actually get it. so — how do you want to fix this? i pulled up the code for you."
+    },
+    {
+      "id": "G2",
+      "method": "pick_defend",
+      "title": "Pick how you'll fix it",
+      "time_cap_seconds": 300,
+      "ambient_tint": "coral",
+      "candidate_facing_content": {
+        "blocks": [
+          {
+            "interaction_type": "display",
+            "body_json": {
+              "prompt": "You know the shape now: carts created before Friday's deploy have a null discount and blow up checkout. There's more than one defensible fix. Maya wants the discount feature kept.",
+              "subtitle": "Same ticket — decide the approach"
+            }
+          },
+          {
+            "interaction_type": "choice_buttons",
+            "body_json": {
+              "prompt": "Which would you ship?",
+              "selection_mode": "single",
+              "matrix_rows": [
+                "effort",
+                "blast_radius",
+                "reversibility",
+                "perf",
+                "maintainability"
+              ],
+              "options": [
+                {
+                  "id": "a",
+                  "value": "a",
+                  "label": "Fix it at the database: give discount_pct a default of 0 and backfill the null rows.",
+                  "criteria": {
+                    "effort": "med",
+                    "blast_radius": "low",
+                    "reversibility": "med",
+                    "perf": "same",
+                    "maintainability": "high"
+                  }
+                },
+                {
+                  "id": "b",
+                  "value": "b",
+                  "label": "Fix it in the app: guard the null in the adapter (?? 0) and correct the type.",
+                  "criteria": {
+                    "effort": "low",
+                    "blast_radius": "low",
+                    "reversibility": "high",
+                    "perf": "same",
+                    "maintainability": "med"
+                  }
+                },
+                {
+                  "id": "c",
+                  "value": "c",
+                  "label": "Roll back Friday's deploy, then redo the discount feature properly.",
+                  "criteria": {
+                    "effort": "low",
+                    "blast_radius": "high",
+                    "reversibility": "high",
+                    "perf": "same",
+                    "maintainability": "low"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "interaction_type": "long_text",
+            "body_json": {
+              "prompt": "Why this one under the constraints — and what would make you switch?",
+              "fields": {
+                "why_this": {
+                  "placeholder": "Why this approach, given the discount feature must stay…"
+                },
+                "switch_if": {
+                  "prefix": "I'd switch to",
+                  "placeholder": "…the DB migration if we couldn't ship app code fast / …rollback if it spread"
+                }
+              },
+              "max_words": 150
+            }
+          }
+        ]
+      },
+      "hidden_state": {
+        "stronger_option": {
+          "id": "a",
+          "why": "A default-and-backfill at the column fixes the class of bug for every consumer of the cart, not just this one read path — the null can never reach app code again. Defensible-strongest for a value that should always exist."
+        },
+        "tradeoff_axis": "defense-in-depth at the data layer vs speed/locality of an app-layer guard (and vs throwing away shipped work in a rollback)",
+        "switch_condition_expected": "Would switch to the app-layer guard (B) if a prod migration is risky/slow to ship right now (do B to stop the bleeding, then backfill); rollback (C) only if the discount feature itself is broken beyond this null.",
+        "founder_pushback": "wouldn't the quick code fix (option b) be faster though?"
+      },
+      "scoring_rubric": {
+        "grading_mode": "Banded",
+        "distinguishing_observable": "Did they commit to a defensible option for the real reason (where the null should be prevented) AND name a concrete switch condition, holding under one pushback — rather than picking 'simplest' blindly?",
+        "stronger_option": {
+          "id": "a",
+          "why": "Prevents the null at the layer every consumer reads, not just this path."
+        },
+        "tradeoff_axis": "data-layer defense-in-depth vs app-layer speed/locality",
+        "rubric_exemplars": {
+          "below": "Can't commit, or picks rollback/B only because it's 'easiest' with no mention of the null or the discount constraint.",
+          "meets": "Picks A or B with a valid reason tied to the null discount.",
+          "above": "Commits with the tradeoff named (prevent-at-source vs speed) AND a real switch condition, and holds when Maya pushes back on the simpler option."
+        }
+      },
+      "ai_floor": "AI will list all three options with balanced pros/cons and not commit. The signal is the human picking under the stated constraint and naming when they'd switch.",
+      "unlocks": "G3",
+      "narrative_handoff": "got it, noted. the codebase is open for you — go find where it's actually breaking before you change anything."
+    },
+    {
+      "id": "G3",
+      "method": "find_target",
+      "title": "Find what's actually broken",
+      "time_cap_seconds": 600,
+      "ambient_tint": "teal",
+      "candidate_facing_content": {
+        "blocks": [
+          {
+            "interaction_type": "display",
+            "body_json": {
+              "prompt": "Here's the slice that runs checkout. Carts with no discount fail; discounted carts are fine, and the shopper just sees a spinner. Find the ONE block that's actually broken before you touch anything.",
+              "subtitle": "Read-only · AI is off for this gate",
+              "blocks": [
+                "Repro: processCheckout({ discount_pct: null, items:[…] }) → { ok:false, reason:'checkout_error' }",
+                "processCheckout({ discount_pct: 10, items:[…] }) → { ok:true }"
+              ]
+            }
+          },
+          {
+            "interaction_type": "code_surface",
+            "body_json": {
+              "mode": "read_only_mark_suspect",
+              "files": [
+                {
+                  "path": "types.ts",
+                  "language": "typescript",
+                  "content": "export type CartItem = { id: string; price_cents: number; qty: number };\n\n// A cart row as it comes back from Supabase. `discount_pct` was added in Friday's\n// migration and is NULLABLE — carts created before the deploy have null here.\nexport type CartRow = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number | null;\n};\n\n// The app-side cart the rest of the code works with. Note: discount_pct is non-null here.\nexport type Cart = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number;\n};\n"
+                },
+                {
+                  "path": "adapter.ts",
+                  "language": "typescript",
+                  "content": "import type { CartRow, Cart } from \"./types\";\n\n// Adapts a raw Supabase row into the app Cart shape.\nexport function adaptCart(row: CartRow): Cart {\n  return {\n    id: row.id,\n    user_id: row.user_id,\n    items: row.items,\n    // The column is nullable, but we assert it is a number. This typechecks green;\n    // for carts created before Friday's deploy discount_pct is actually null.\n    discount_pct: row.discount_pct as number,\n  };\n}\n"
+                },
+                {
+                  "path": "total.ts",
+                  "language": "typescript",
+                  "content": "import type { Cart } from \"./types\";\n\nexport function subtotalCents(cart: Cart): number {\n  return cart.items.reduce((sum, it) => sum + it.price_cents * it.qty, 0);\n}\n\n// Final total in cents after the cart's discount.\nexport function cartTotalCents(cart: Cart): number {\n  const sub = subtotalCents(cart);\n  // Normalise the percent to two places before applying it. Looks lossy but is correct to the cent.\n  const rate = Number(cart.discount_pct.toFixed(2)) / 100;\n  return Math.round(sub * (1 - rate));\n}\n"
+                },
+                {
+                  "path": "checkout.ts",
+                  "language": "typescript",
+                  "content": "import type { CartRow } from \"./types\";\nimport { adaptCart } from \"./adapter\";\nimport { cartTotalCents } from \"./total\";\n\nexport type CheckoutResult =\n  | { ok: true; total_cents: number }\n  | { ok: false; reason: string };\n\nexport function processCheckout(row: CartRow): CheckoutResult {\n  const cart = adaptCart(row);\n  // Empty carts can't check out.\n  if (cart.items.length === 0) return { ok: false, reason: \"empty_cart\" };\n  try {\n    const total = cartTotalCents(cart);\n    if (!Number.isFinite(total)) return { ok: false, reason: \"bad_total\" };\n    return { ok: true, total_cents: total };\n  } catch {\n    // Some carts blow up here and the user just sees the button spin forever.\n    return { ok: false, reason: \"checkout_error\" };\n  }\n}\n"
+                }
+              ],
+              "ai_off_note": "You're navigating unaided — AI is off for this gate.",
+              "instruction": "Mark the ONE block that's actually the cause (not just where it crashes).",
+              "capture": [
+                "files_opened",
+                "navigation_path",
+                "time_to_mark",
+                "marked_range"
+              ]
+            }
+          }
+        ]
+      },
+      "hidden_state": {
+        "target_block": {
+          "flaw_id": "F1",
+          "file": "adapter.ts",
+          "lines": "9-11"
+        },
+        "distractor_blocks": [
+          {
+            "file": "total.ts",
+            "lines": "10-11",
+            "why_tempting": "This is where it THROWS (.toFixed on null), so it looks like the bug — but the value should never have been null here; the cause is upstream."
+          },
+          {
+            "file": "checkout.ts",
+            "lines": "13-16",
+            "why_tempting": "The catch block 'swallows' the error and returns the generic failure — looks like the cause of the silent fail, but it's only the symptom site."
+          }
+        ],
+        "four_tuple": {
+          "flaw_location": "adapter.ts: `discount_pct: row.discount_pct as number` — a cast that asserts non-null on a nullable column.",
+          "the_tell": "Fails only for the no-discount (null) variant; the cast makes TS think it's always a number so nothing flags it.",
+          "catching_looks_like": "Marks the adapter cast as the cause.",
+          "correcting_looks_like": "Marks the cast AND explains: the null flows from the adapter into total.ts where .toFixed throws, caught in checkout.ts as a silent fail."
+        }
+      },
+      "scoring_rubric": {
+        "grading_mode": "Trap",
+        "distinguishing_observable": "Did they mark the adapter cast (the originating cross-file cause), not the throw site in total.ts or the catch in checkout.ts — via an efficient path?",
+        "four_tuple": {
+          "flaw_location": "adapter.ts lying `as number` cast on a nullable column.",
+          "the_tell": "Only the null-discount variant fails; the cast suppresses the type error.",
+          "catching_looks_like": "Marks the adapter cast.",
+          "correcting_looks_like": "Marks the cast and traces null → total.toFixed throw → checkout silent catch."
+        },
+        "rubric_exemplars": {
+          "below": "Marks the .toFixed line in total.ts or the catch in checkout.ts (symptom sites).",
+          "meets": "Marks the `as number` cast in adapter.ts as the cause.",
+          "above": "Marks the cast and explains the cross-file mechanism, reaching it via a direct path from the symptom."
+        }
+      },
+      "ai_floor": "Single-file AI review calls each file 'fine' — in isolation each is. The bug is only in the adapter→total→checkout relationship, which needs all three files and the right framing.",
+      "unlocks": "G4",
+      "narrative_handoff": "yep, that's the one. okay — fix it for real now. here's the bar you're hitting."
+    },
+    {
+      "id": "G4",
+      "method": "assignment",
+      "title": "Ship the fix",
+      "time_cap_seconds": 2700,
+      "ambient_tint": "teal",
+      "candidate_facing_content": {
+        "blocks": [
+          {
+            "interaction_type": "display",
+            "body_json": {
+              "prompt": "For this session, make checkout succeed for a no-discount cart and keep every total correct — without breaking discounted carts. Edit the code and run the tests until they're green.",
+              "subtitle": "The build · take your time",
+              "blocks": [
+                "Done = all tests pass and a no-discount cart checks out with the right total.",
+                "Keep one consistent model — don't paper over the null in three places."
+              ],
+              "highlight": "Use your normal AI tooling. This is the open-time gate — take your time."
+            }
+          },
+          {
+            "interaction_type": "code_surface",
+            "body_json": {
+              "mode": "sandbox",
+              "runtime": "sandpack",
+              "files": [
+                {
+                  "path": "types.ts",
+                  "language": "typescript",
+                  "content": "export type CartItem = { id: string; price_cents: number; qty: number };\n\n// A cart row as it comes back from Supabase. `discount_pct` was added in Friday's\n// migration and is NULLABLE — carts created before the deploy have null here.\nexport type CartRow = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number | null;\n};\n\n// The app-side cart the rest of the code works with. Note: discount_pct is non-null here.\nexport type Cart = {\n  id: string;\n  user_id: string;\n  items: CartItem[];\n  discount_pct: number;\n};\n"
+                },
+                {
+                  "path": "adapter.ts",
+                  "language": "typescript",
+                  "content": "import type { CartRow, Cart } from \"./types\";\n\n// Adapts a raw Supabase row into the app Cart shape.\nexport function adaptCart(row: CartRow): Cart {\n  return {\n    id: row.id,\n    user_id: row.user_id,\n    items: row.items,\n    // The column is nullable, but we assert it is a number. This typechecks green;\n    // for carts created before Friday's deploy discount_pct is actually null.\n    discount_pct: row.discount_pct as number,\n  };\n}\n"
+                },
+                {
+                  "path": "total.ts",
+                  "language": "typescript",
+                  "content": "import type { Cart } from \"./types\";\n\nexport function subtotalCents(cart: Cart): number {\n  return cart.items.reduce((sum, it) => sum + it.price_cents * it.qty, 0);\n}\n\n// Final total in cents after the cart's discount.\nexport function cartTotalCents(cart: Cart): number {\n  const sub = subtotalCents(cart);\n  // Normalise the percent to two places before applying it. Looks lossy but is correct to the cent.\n  const rate = Number(cart.discount_pct.toFixed(2)) / 100;\n  return Math.round(sub * (1 - rate));\n}\n"
+                },
+                {
+                  "path": "checkout.ts",
+                  "language": "typescript",
+                  "content": "import type { CartRow } from \"./types\";\nimport { adaptCart } from \"./adapter\";\nimport { cartTotalCents } from \"./total\";\n\nexport type CheckoutResult =\n  | { ok: true; total_cents: number }\n  | { ok: false; reason: string };\n\nexport function processCheckout(row: CartRow): CheckoutResult {\n  const cart = adaptCart(row);\n  // Empty carts can't check out.\n  if (cart.items.length === 0) return { ok: false, reason: \"empty_cart\" };\n  try {\n    const total = cartTotalCents(cart);\n    if (!Number.isFinite(total)) return { ok: false, reason: \"bad_total\" };\n    return { ok: true, total_cents: total };\n  } catch {\n    // Some carts blow up here and the user just sees the button spin forever.\n    return { ok: false, reason: \"checkout_error\" };\n  }\n}\n"
+                }
+              ],
+              "entry": "checkout.ts",
+              "tests_visible_names": [
+                "no-discount cart total is correct",
+                "discount cart still applies the discount",
+                "checkout succeeds for a no-discount cart",
+                "totals are always finite (no NaN, no throw)"
+              ],
+              "run_label": "Run tests"
+            }
+          },
+          {
+            "interaction_type": "long_text",
+            "body_json": {
+              "prompt": "Where did you verify the pieces actually agree (the adapter, the total, the row shape)?",
+              "min_words": 40,
+              "max_words": 200
+            }
+          }
+        ]
+      },
+      "hidden_state": {
+        "canonical_assignment": "Regardless of the G2 pick, in this sandbox the fix is the app-layer guard: make adaptCart coalesce the nullable discount_pct (e.g. `row.discount_pct ?? 0`) and correct the type so the null never reaches total.ts.",
+        "injected_flaws": [
+          "F1"
+        ],
+        "test_file_name": "checkout.test.ts",
+        "test_file_content": "import { adaptCart } from \"./adapter\";\nimport { cartTotalCents } from \"./total\";\nimport { processCheckout } from \"./checkout\";\nimport type { CartRow } from \"./types\";\n\nconst items = [\n  { id: \"i1\", price_cents: 600, qty: 1 },\n  { id: \"i2\", price_cents: 400, qty: 1 },\n]; // subtotal = 1000\n\nconst noDiscount: CartRow = { id: \"c1\", user_id: \"u1\", items, discount_pct: null };\nconst withDiscount: CartRow = { id: \"c2\", user_id: \"u1\", items, discount_pct: 10 };\n\ntest(\"no-discount cart total is correct\", () => {\n  expect(cartTotalCents(adaptCart(noDiscount))).toBe(1000);\n});\ntest(\"discount cart still applies the discount\", () => {\n  expect(cartTotalCents(adaptCart(withDiscount))).toBe(900);\n});\ntest(\"checkout succeeds for a no-discount cart\", () => {\n  expect(processCheckout(noDiscount)).toEqual({ ok: true, total_cents: 1000 });\n});\ntest(\"totals are always finite (no NaN, no throw)\", () => {\n  expect(() => cartTotalCents(adaptCart(noDiscount))).not.toThrow();\n});\n",
+        "test_suite": [
+          {
+            "name": "no-discount cart total is correct",
+            "kind": "isolation",
+            "_hidden_assert": "cartTotalCents(adaptCart(noDiscount)) === 1000"
+          },
+          {
+            "name": "discount cart still applies the discount",
+            "kind": "isolation",
+            "_hidden_assert": "cartTotalCents(adaptCart(withDiscount)) === 900"
+          },
+          {
+            "name": "checkout succeeds for a no-discount cart",
+            "kind": "insert",
+            "_hidden_assert": "processCheckout(noDiscount) deep-equals { ok:true, total_cents:1000 }"
+          },
+          {
+            "name": "totals are always finite (no NaN, no throw)",
+            "kind": "render",
+            "_hidden_assert": "cartTotalCents(adaptCart(noDiscount)) does not throw"
+          }
+        ],
+        "pass_criteria": "All four tests green AND the null is fixed at the adapter seam (not patched separately in total.ts and checkout.ts)."
+      },
+      "scoring_rubric": {
+        "grading_mode": "Banded",
+        "distinguishing_observable": "Do the tests actually go green (the no-discount cart checks out with total 1000 and discounted carts still get 900), and is there ONE consistent fix at the adapter — not duplicated null-guards smeared across files?",
+        "working_output_definition": "processCheckout(no-discount cart) === { ok:true, total_cents:1000 }; discounted cart still totals 900; no throw / no NaN.",
+        "harness_checks": [
+          "no-discount cart total === 1000",
+          "discount cart total === 900",
+          "processCheckout(no-discount).ok === true",
+          "cartTotalCents(no-discount) does not throw"
+        ],
+        "rubric_exemplars": {
+          "below": "Tests stay red, or it only stops the throw without producing the correct total, or the build isn't completed.",
+          "meets": "All tests green via a working fix that meets the working-output definition.",
+          "above": "All tests green AND the null is handled once at the adapter seam with the type corrected — no duplicated guards, no lying cast left behind."
+        }
+      },
+      "ai_floor": "AI will happily emit a null-guard the moment it's pointed at the throw — and will often patch total.ts or checkout.ts (the symptom sites) instead of the adapter. The signal is fixing the seam once, in the right place, and verifying it.",
+      "unlocks": "G5",
+      "narrative_handoff": "tests are green — amazing, thank you. oh wait, hold on — one more thing before my investor call in two minutes…"
+    },
+    {
+      "id": "G5",
+      "method": "curveball",
+      "title": "Two minutes to the investor call",
+      "time_cap_seconds": 120,
+      "ambient_tint": "coral",
+      "candidate_facing_content": {
+        "blocks": [
+          {
+            "interaction_type": "display",
+            "body_json": {
+              "prompt": "maya: investors are on in 2 min and they LOVED the discount idea. can we just turn on a flat 20% off for everyone right now? like, today? 🙏🙏",
+              "subtitle": "Decision, not a build — you don't have to finish anything.",
+              "time_box_seconds": 120,
+              "reassure": "We're watching how you decide, not whether you finish."
+            }
+          },
+          {
+            "interaction_type": "choice_buttons",
+            "body_json": {
+              "prompt": "What do you tell Maya?",
+              "selection_mode": "single",
+              "options": [
+                {
+                  "id": "ship_flag",
+                  "value": "ship_flag",
+                  "label": "Yes-ish: put it behind a flag with a guardrail, after we confirm the null fix is live."
+                },
+                {
+                  "id": "block",
+                  "value": "block",
+                  "label": "Not yet: we just fixed checkout — don't stack a risky global change before it's verified in prod."
+                },
+                {
+                  "id": "patch_todo",
+                  "value": "patch_todo",
+                  "label": "Quick hack now, real version + tests right after the call."
+                }
+              ]
+            }
+          },
+          {
+            "interaction_type": "long_text",
+            "body_json": {
+              "prompt": "In one line — why?",
+              "max_words": 40,
+              "auto_submit_on_timeout": true
+            }
+          }
+        ]
+      },
+      "hidden_state": {
+        "strong_vs_weak": {
+          "strong": "Scopes the smallest safe slice and names the blast radius: confirm the checkout fix is live first, then a 20%-off can go behind a flag / limited rollout — explicitly ties the new risk to the bug just fixed.",
+          "weak": "Just says 'yes, on it!' and tries to ship a global 20% discount in two minutes, ignoring that checkout was broken minutes ago; or freezes and gives no decision."
+        },
+        "tension_with_g2": "Whatever careful fix they chose in G2, they're now pressured to bolt a broad, untested pricing change onto the same just-stabilised checkout path under a hard deadline."
+      },
+      "scoring_rubric": {
+        "grading_mode": "Banded",
+        "distinguishing_observable": "Under the clock, did they make a defensible judgment call (scope it / flag the risk / reasoned punt) instead of blindly complying or freezing?",
+        "rubric_exemplars": {
+          "below": "Blindly agrees and tries to build the global discount in 2 minutes, or gives no decision.",
+          "meets": "Makes a clear call (e.g. behind a flag, or 'not before it's verified') with a plausible one-line reason.",
+          "above": "Makes the call, names the blast radius / smallest safe slice / explicit risk flag, and ties it back to the checkout fix that just shipped."
+        }
+      },
+      "ai_floor": "An AI asked to 'add a 20% discount' will just start writing the change. It won't weigh that checkout was broken 90 seconds ago or scope a safe rollout — that judgment is the whole signal.",
+      "unlocks": null,
+      "narrative_handoff": "okay — good call, that's the fire out. let me tell you what i noticed while you worked…"
+    }
+  ],
+  "skill_nodes_covered": [
+    {
+      "node": "requirements probing / surfacing hidden constraints",
+      "gates": [
+        "G1"
+      ]
+    },
+    {
+      "node": "architecture & data-layer tradeoff judgement",
+      "gates": [
+        "G2"
+      ]
+    },
+    {
+      "node": "cross-file debugging / root-cause navigation (distrust the green check)",
+      "gates": [
+        "G3"
+      ]
+    },
+    {
+      "node": "build, integrate & verify the seam with AI tooling",
+      "gates": [
+        "G4"
+      ]
+    },
+    {
+      "node": "judgement under pressure / scoping a safe change",
+      "gates": [
+        "G5"
+      ]
+    }
+  ]
+}

@@ -1,8 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // The trip JSON lives one level up in ../output and is read at request time
-  // by src/engine/load.ts (server-only fs). Nothing to configure for that here.
+  // The trip JSON lives in preview/output and is read at request time by
+  // src/engine/load.ts (server-only fs). force-dynamic pages run as serverless
+  // functions, so the files must be traced into the function bundle or fs.readdir
+  // returns nothing in production.
+  outputFileTracingIncludes: {
+    "/**/*": ["./output/**/*"],
+  },
   //
   // The project ships no working ESLint setup (the default parser can't read TS
   // `import type` syntax — it errors on pre-existing files too), so don't fail the

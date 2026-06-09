@@ -1,0 +1,609 @@
+{
+  "trip_plan": {
+    "domain": "AI-native Backend Engineering",
+    "role": "Backend engineer — Node/TS, Postgres, queues, websockets (AI-assisted)",
+    "target_band": "3",
+    "default_rung": "intermediate",
+    "total_time_cap_seconds": 5400,
+    "classes_covered": [
+      "Judgement",
+      "Cognition",
+      "Execution"
+    ],
+    "card_sequence": [
+      "J1",
+      "J4",
+      "C3",
+      "J6",
+      "E1"
+    ],
+    "stamina_note": "The closing E1 repo build (2700s: schema + idempotent upsert + ws apply + replay proof) is the sustained build that makes stamina observable; the mid C3 (1500s) cross-file reconnect-replay trace adds a second block of heavy focus, so endurance shows across two long cards.",
+    "coverage_gaps": "Tested Judgement/Cognition/Execution directly across realtime correctness. Observability and load-testing skill observed only incidentally in the E1 recording and the J6 triage, not as dedicated cards, to stay inside the ~90-min budget.",
+    "generated_from": "Hand-authored from trip-orchestrator.md spine (J1/J4/C3/J6/E1), realtime-collab/idempotency scenario."
+  },
+  "cards": [
+    {
+      "sequence_index": 0,
+      "routing": {
+        "fit_reason": "J1 Voice is the only method that tests probing for the hidden consistency/conflict-resolution constraint before building; at band 3 the omission is what 'realtime collaboration' concretely means (ordering + conflict resolution + reconnect replay), which J4/J6 would pre-supply and rob the signal.",
+        "ai_floor_hook": "AI instantly emits a generic websocket + broadcast plan; it won't surface, unprompted, that 'collaborative' is undefined (last-write-wins vs OT/CRDT), nor rank reconnect-replay/exactly-once as the decision that reshapes the whole protocol."
+      },
+      "card": {
+        "method_id": "J1",
+        "skill_class": "Judgement",
+        "lever_id": "voice",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "Realtime multiplayer doc editing — frame it before you build",
+        "instruction": "A founder just handed you a one-line brief (read it on the left). Before you propose any websocket topology, tables, or code: restate the problem in your own words, then ask whatever you need to ask before you'd commit to a sync protocol. Talk it through out loud — this is a conversation, not a design doc. We care more about which questions you ask and the order you ask them in than how fast you can name a transport.",
+        "time_cap_seconds": 540,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Realtime Backend Engineering",
+          "sub_skills": [
+            "Distributed Systems",
+            "Idempotency & Consistency",
+            "Postgres",
+            "Websockets"
+          ],
+          "domain": "AI-native Backend Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The brief",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "\"We're adding live collaboration to our editor — like Google Docs. Multiple people editing the same document at the same time and everyone sees changes instantly. Set up the realtime backend so edits sync. Walk me through how you'd do it.\"",
+            "subtitle": "AI-native product startup. Stack is fixed: Node/TypeScript services, Postgres, a websocket layer, and a background job queue. The founder is non-technical and wants a usable v1 this sprint.",
+            "blocks": [
+              "Context the founder volunteered: users open a doc, type, and everyone on that doc should see edits 'instantly'. They want presence (who's here) eventually, but editing-sync first.",
+              "The founder considers this well-understood ('just websockets') and expects a topology + a plan. They will answer questions if you ask, but will not volunteer constraints you don't probe for."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "voice_exchange",
+          "title": "Restate, then probe",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Restate the problem in your own words, then ask whatever you need before you'd commit to a sync protocol. Lead with the questions that would most change the design. If something in the brief is doing a lot of silent work, name it.",
+            "turn_mode": "multi_turn",
+            "max_turns": 4,
+            "expected_signal": "Tight restatement that flags the ambiguity, then impact-ranked probing — the #1 question pins down what 'collaborative' means when two people edit the same span at once (conflict resolution: last-write-wins vs OT/CRDT) and how the system stays correct across reconnects (replay / exactly-once) before any transport is chosen.",
+            "_hidden_omissions": [
+              {
+                "rank": 1,
+                "fact": "The brief never defines the CONSISTENCY / CONFLICT-RESOLUTION model: when two users edit the same region concurrently, what is the correct converged state — last-write-wins, operational transform (OT), or a CRDT — and is every client guaranteed to converge to the SAME document? This is the rule the entire sync protocol hinges on.",
+                "why_it_changes_the_approach": "It decides whether you ship a naive 'broadcast each keystroke' relay (fine only for LWW on disjoint edits), an OT server that transforms ops against concurrent ones, or a CRDT where ops commute. It also dictates the data model (ops log vs state snapshots), the server's role (dumb relay vs authority), and whether order matters. You cannot pick the transport, the schema, or the apply logic until this is settled."
+              },
+              {
+                "rank": 2,
+                "fact": "Delivery guarantees across disconnects: when a client's socket drops mid-edit, what happens to ops it already sent but never got an ack for — are they replayed on reconnect, and must apply be EXACTLY-ONCE so a replayed op isn't applied twice?",
+                "why_it_changes_the_approach": "Drives whether each op needs a stable idempotency key (clientId, clientSeq), whether the server persists ops before ack, and where dedup lives. Get it wrong and reconnects silently duplicate or drop edits."
+              },
+              {
+                "rank": 3,
+                "fact": "Ordering and the source of truth: is there a single authoritative ordering of ops per document (server-assigned sequence), and is the doc reconstructed from an ops log or from periodic snapshots?",
+                "why_it_changes_the_approach": "Determines if you need a per-doc monotonic sequence, an append-only ops table, and snapshot/compaction — and whether a late op can be inserted in the past."
+              },
+              {
+                "rank": 4,
+                "fact": "Scale & fan-out: how many concurrent editors per doc and docs per node, and do websocket servers need to share state (one node can't hold every doc) — i.e. is a pub/sub or the queue in the path between nodes?",
+                "why_it_changes_the_approach": "Decides sticky sessions vs shared pub/sub, and whether the background queue re-applies ops to rebuild snapshots (a second apply path that any dedup must also cover)."
+              },
+              {
+                "rank": 5,
+                "fact": "Auth & per-doc authorization: who may join a given doc's realtime channel, and is that enforced per-connection at subscribe time?",
+                "why_it_changes_the_approach": "Determines channel-authorization on subscribe (not just on HTTP) so a user can't subscribe to a doc they can't access."
+              }
+            ]
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasted into an assistant, the brief returns a confident generic plan instantly: 'use websockets (Socket.IO), broadcast each change to everyone on the doc, store the document in Postgres, add reconnection.' It will NOT, unprompted, stop and insist that 'collaborative' is undefined — that concurrent edits to the same span need an explicit conflict-resolution model (LWW vs OT vs CRDT) and that reconnect-replay forces exactly-once apply — nor rank those as THE decisions that reshape the whole protocol. That broadcast-relay answer is the Below floor.",
+        "distinguishing_observable": "Did they surface the conflict-resolution / convergence model (and the reconnect exactly-once concern) UNPROMPTED, and treat it as the highest-leverage unknown — ordering questions by what most reshapes the protocol (how concurrent edits converge first) rather than by transport trivia?",
+        "rubric_exemplars": {
+          "below": "\"Got it — live collaboration. I'd use Socket.IO, put every client editing a doc in a room, and broadcast each change to the room so everyone sees it instantly. I'll save the doc in Postgres and add auto-reconnect. Want me to scaffold the socket server?\" — accepts 'just websockets', never asks how concurrent edits converge or what happens on replay; this is what the AI emits.",
+          "meets": "\"Let me restate: multiple people edit one doc and everyone should converge on the same content in near real time. The thing I'd pin down first is conflict resolution — if two people edit the same line at once, is last-write-wins acceptable for v1 or do we need real merge (OT/CRDT)? I'd also ask what happens to in-flight edits on a reconnect. That changes whether the server is a dumb relay or an authority.\" — names convergence as the real question and asks at least one decision-relevant follow-up, but treats it as one item among several.",
+          "above": "\"Restate: you want concurrent multi-user editing where everyone converges on one document — and the word doing all the silent work is 'collaborative,' because it secretly defines the whole protocol. Before I pick a transport, the one thing I must settle: when two people edit the same span at the same time, what's the correct converged result — last-write-wins (cheap, lossy), operational transform, or a CRDT — and is every client guaranteed the SAME final doc? That decides ops-log vs snapshots, whether the server transforms ops or just relays them, and whether per-op ordering matters. Second, tightly coupled: on a dropped socket, are unacked ops replayed on reconnect? If so apply has to be exactly-once via a stable (clientId, clientSeq) key, and the server should persist before it acks — otherwise reconnects duplicate or drop edits, and our background snapshot worker (a second apply path) would double-apply too. So my ordered questions: (1) conflict-resolution/convergence model, (2) reconnect replay + exactly-once, (3) authoritative ordering & source of truth, (4) per-doc fan-out across nodes.\" — restates AND names convergence as the pivot, ties each design fork to the answer, raises exactly-once on replay unprompted, and orders questions highest-leverage first."
+        }
+      }
+    },
+    {
+      "sequence_index": 1,
+      "routing": {
+        "fit_reason": "J4 forces commitment on a genuinely contested fork; the background snapshot worker + reconnect replay make a durable DB idempotency key the constraint-forced answer, which a balanced 'dedup in the socket layer is simpler' AI answer cannot reach — and J1/J6 don't test a single decisive fork.",
+        "ai_floor_hook": "AI argues for an in-memory dedup Set in the ws process as 'simplest', missing that the queue worker and reconnect replay run outside that process so the dedup never protects those paths."
+      },
+      "card": {
+        "method_id": "J4",
+        "skill_class": "Judgement",
+        "lever_id": "quiz",
+        "grading_mode": "Banded",
+        "review": "Auto",
+        "title": "Apply each edit exactly once: where does the dedup rule live?",
+        "instruction": "In your realtime editor, the same op can arrive more than once — clients replay unacked ops on reconnect, and a background worker re-applies ops to rebuild snapshots. 'Apply each logical edit exactly once' must hold on every path. Three placements are on the table, and one detail about who re-applies ops decides between them. Read the brief, commit to the option you'd ship, then defend it: why this one under the stated constraint, and the exact condition under which you'd switch.",
+        "time_cap_seconds": 360,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Realtime Backend Engineering",
+          "sub_skills": [
+            "Distributed Systems",
+            "Idempotency & Consistency",
+            "Postgres",
+            "Websockets"
+          ],
+          "domain": "AI-native Backend Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The situation",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Realtime doc editor on Node/TS + Postgres + a job queue. Each edit is an `Op` carrying a stable idempotency key (clientId, clientSeq) — the same logical edit keeps that key across retries. The product requirement is hard: every op must be APPLIED EXACTLY ONCE to the document, or users see duplicated/garbled text.\n\nThree placements for the dedup rule:\n\nOption A — Durable dedup in Postgres. A UNIQUE constraint on (doc_id, client_id, client_seq) on the ops table; apply via INSERT ... ON CONFLICT DO NOTHING. The DB is the single arbiter of 'seen', for every writer.\n\nOption B — In-memory dedup in the websocket process. Each ws node keeps a Set of seen (clientId, clientSeq) and skips duplicates before applying. All in TypeScript, no schema change, fast.\n\nOption C — Dedup in the queue consumer. The background worker that rebuilds snapshots holds the seen-set and de-dupes there.\n\nDECIDING DETAIL: ops are applied on THREE paths — the live websocket handler, the client's reconnect REPLAY (which may land on a DIFFERENT ws node), and the background snapshot worker on the queue (no socket, no shared memory with the ws nodes).",
+            "subtitle": "Realtime backend · exactly-once apply · Node/TS + Postgres + queue",
+            "rules": [],
+            "start_label": "Start"
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "choice_buttons",
+          "title": "Pick the option you'd ship",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Pick the option you'd ship.",
+            "options": [
+              {
+                "id": "a",
+                "label": "Option A — UNIQUE (doc_id, client_id, client_seq) in Postgres; apply via INSERT ... ON CONFLICT DO NOTHING, enforced for every writer",
+                "value": "a"
+              },
+              {
+                "id": "b",
+                "label": "Option B — In-memory seen-Set in the websocket process; skip duplicates before applying",
+                "value": "b"
+              },
+              {
+                "id": "c",
+                "label": "Option C — Dedup in the background queue consumer that rebuilds snapshots",
+                "value": "c"
+              }
+            ],
+            "selection_mode": "single",
+            "correct_answer": "a"
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Defend your pick",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Defend your pick in a few sentences: why this option given that three different actors apply ops, what tradeoff you're accepting, and the exact condition under which you'd switch.",
+            "placeholder": "I'd ship ___ because the replay/worker paths mean ___. The tradeoff I'm accepting is ___. I'd switch to ___ only if ___.",
+            "max_words": 150
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasted into an assistant, the brief yields a fluent both-sides answer and frequently defaults to Option B ('keep a Set of seen ids in the socket server — simplest, no migration, fast'). It won't, unprompted, identify that the in-memory Set is local to ONE ws process, so a replay landing on another node and the session-less queue worker both bypass it. The AI will also endorse C without noting it leaves the live path unprotected. That is the Below floor.",
+        "distinguishing_observable": "Did they pick the durable DB option (A) BECAUSE three independent actors apply ops — live handler, reconnect replay (possibly a different node), and the session-less queue worker — so only a single shared arbiter (a UNIQUE constraint in Postgres) can enforce exactly-once across all of them — AND name the switch condition?",
+        "stronger_option": {
+          "id": "a",
+          "why": "Exactly-once is a contract that must hold on every apply path. An in-memory Set (B) lives in one ws process; a replay that reconnects to a different node, and the background worker that has no socket and no shared memory, both miss it. Dedup in the queue (C) leaves the live websocket apply unprotected. A UNIQUE (doc_id, client_id, client_seq) constraint with INSERT ... ON CONFLICT DO NOTHING makes Postgres the single arbiter of 'seen' for the live handler, any replay on any node, the worker, a future cron, or a manual backfill — the key is stable across retries, so a replay is a no-op."
+        },
+        "tradeoff_axis": "durable single-arbiter dedup (one UNIQUE constraint holds for every writer incl. session-less worker) vs in-process simplicity/latency (a Set in TypeScript, no migration — but only covers the one node that holds it).",
+        "rubric_exemplars": {
+          "below": "Picks Option B for a surface reason: 'a Set of seen ids in the socket server is simplest and fastest, no DB change.' (Confidently wrong: the replay can hit another node and the queue worker shares no memory, so the Set never sees those ops.) Also Below: cannot commit ('depends'), or picks C only because 'the worker is where snapshots are built' without noticing the live path is then unprotected.",
+          "meets": "Picks A and gives a valid durable-dedup reason: 'put a UNIQUE constraint on the idempotency key and use ON CONFLICT DO NOTHING so duplicates can't be applied twice — the database enforces it for every query.' Correct option and sound DB rationale, but doesn't explicitly tie it to the three distinct apply paths (replay on another node + session-less worker) invalidating the in-memory option, and gives no precise switch condition.",
+          "above": "Picks A and pins the mechanism + switch: 'Three actors apply ops — the live handler, a reconnect replay that may land on a DIFFERENT ws node, and the queue worker with no socket and no shared memory. An in-memory Set only protects the node holding it, so replays and the worker would double-apply. A UNIQUE (doc_id, client_id, client_seq) with INSERT ... ON CONFLICT DO NOTHING makes Postgres the one arbiter for all of them; the key is stable across retries so a replay is a no-op. The tradeoff I accept is a write round-trip and a migration. I'd drop to an in-process Set ONLY if there were a single ws node AND no out-of-process re-apply path — which the reconnect-to-any-node fan-out and the snapshot worker make false here.'"
+        }
+      }
+    },
+    {
+      "sequence_index": 2,
+      "routing": {
+        "fit_reason": "C3 on the Node/TS realtime path is the sharpest 'distrust the green checkmark' test: the bug lives in the cross-file relationship (the wire contract says op.id changes per attempt -> apply dedups on op.id), invisible in any single file; at band 3 the tell requires connecting the 'only duplicates after a reconnect' variant to the dedup-key choice across files.",
+        "ai_floor_hook": "Pasting any one file into AI returns 'looks correct' — each file is locally valid; the dedup only fails across files for the reconnect-replay variant where op.id is re-minted."
+      },
+      "card": {
+        "method_id": "C3",
+        "skill_class": "Cognition",
+        "lever_id": "live_ide",
+        "grading_mode": "Trap",
+        "review": "Auto",
+        "title": "Edits duplicate after a reconnect — but only sometimes",
+        "instruction": "Our realtime editor applies each op exactly once — or so the code claims. It typechecks cleanly, the editor shows no red squiggles, and steady-state editing is fine. But when a client's socket drops and reconnects, some edits show up TWICE in the document. Three relevant files are open below in read-only mode: the wire types, the apply/dedup logic, and the websocket handler. Read the code and the evidence, find the ACTUAL cause (not the line that pushes the duplicate), and explain the failure mechanism and the tell. You do not have an AI assistant for this card.",
+        "time_cap_seconds": 1500,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Realtime Backend Engineering",
+          "sub_skills": [
+            "Distributed Systems",
+            "Idempotency & Consistency",
+            "Postgres",
+            "Websockets"
+          ],
+          "domain": "AI-native Backend Engineering",
+          "target_band": "3",
+          "target_rung": "r3"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The symptom",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Live edits sync correctly in steady state. But for a subset of sessions — specifically after a websocket drop + reconnect — some characters/edits appear duplicated in the document. The op log for the affected doc shows two entries with the SAME (clientId, clientSeq) but DIFFERENT op.id. `tsc --noEmit` is clean. Apply has an idempotency guard and it works for ordinary retries within a single connection.",
+            "subtitle": "Surfaces in the document state, but only for sessions that reconnected mid-edit.",
+            "blocks": [
+              "Incident timeline (one affected doc):",
+              "[ws] client c4f0 connected",
+              "[ws] op recv  clientSeq=41 id=7a1e... applied (revision 41)",
+              "[ws] socket closed (network blip) before ack for clientSeq=41 was delivered",
+              "[ws] client c4f0 reconnected",
+              "[ws] replay recv clientSeq=41 id=9b22...  applied (revision 42)   <-- same edit, applied again",
+              "doc.ops now contains clientSeq=41 TWICE (ids 7a1e..., 9b22...)",
+              "Note: tsc --noEmit exits 0. The duplicate reproduces ONLY when a reconnect replays an op whose ack was lost. Ordinary same-connection retries do NOT duplicate."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "code_editor",
+          "title": "Read-only: the three relevant files",
+          "response_expected": false,
+          "body_json": {
+            "mode": "read_only",
+            "files": [
+              {
+                "path": "src/types.ts",
+                "language": "typescript",
+                "content": "/**\n * Shared wire types for the realtime doc-editing service.\n *\n * Every edit a client makes is an `Op`. Ops travel client -> ws-server -> applyOp.\n */\n\nexport type OpKind = 'insert' | 'delete' | 'format';\n\nexport type Op = {\n  /**\n   * Per-SEND id. The client mints a FRESH uuid every time it transmits an op,\n   * including every retry/replay of the same logical edit. Do not treat this as\n   * a stable identity for an edit — it changes on each attempt.\n   */\n  id: string;\n  docId: string;\n  /** Stable id of the originating client (one per browser tab/session). */\n  clientId: string;\n  /**\n   * Monotonic per-client sequence number for the LOGICAL edit. Stable across\n   * retries: a replayed op keeps the same clientSeq but gets a new `id`.\n   */\n  clientSeq: number;\n  kind: OpKind;\n  payload: unknown;\n};\n"
+              },
+              {
+                "path": "src/apply-op.ts",
+                "language": "typescript",
+                "content": "import type { Op } from './types';\nimport { docState } from './doc-state';\n\n/**\n * Applies an op to the in-memory document and appends it to the op log.\n *\n * Idempotency: ops can arrive more than once (network retries, reconnect\n * replay), so we keep a set of ops we've already applied and skip duplicates.\n */\nconst appliedOps = new Set<string>();\n\nexport function applyOp(op: Op): void {\n  // Already applied this op? Skip — keeps apply idempotent under retries.\n  if (appliedOps.has(op.id)) {\n    return;\n  }\n  appliedOps.add(op.id);\n\n  // Mutate the document for this doc + append to its ordered op log.\n  const doc = docState.get(op.docId);\n  doc.ops.push(op);\n  doc.revision += 1;\n}\n"
+              },
+              {
+                "path": "src/ws-server.ts",
+                "language": "typescript",
+                "content": "import type { Op } from './types';\nimport { applyOp } from './apply-op';\nimport { unacked } from './doc-state';\n\n/**\n * Per-connection websocket handler.\n *\n * Normal path: a client sends an op, we apply it and ack it back so the client\n * can drop it from its outbound buffer.\n *\n * Reconnect path: when a socket drops, the client does NOT know which of its\n * in-flight ops the server actually received. On reconnect it REPLAYS every op\n * it has not yet seen an ack for. Each replayed op carries the SAME clientSeq as\n * the original but — per the wire contract — a freshly minted `id`.\n */\nexport function handleConnection(socket: Socket) {\n  socket.on('op', (op: Op) => {\n    applyOp(op);\n    socket.send({ type: 'ack', id: op.id, clientSeq: op.clientSeq });\n  });\n\n  socket.on('reconnect', ({ clientId }: { clientId: string }) => {\n    // Re-send anything the client may have missed an ack for.\n    for (const op of unacked(clientId)) {\n      socket.send({ type: 'replay', op });\n    }\n  });\n}\n\ntype Socket = {\n  on: (event: string, cb: (data: any) => void) => void;\n  send: (msg: unknown) => void;\n};\n"
+              }
+            ],
+            "capture": [
+              "grep_targets",
+              "files_opened",
+              "navigation_path",
+              "time_to_cause"
+            ]
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Diagnose the cause",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "What is the ACTUAL cause of the duplicate, and what was the tell that the duplicate's insertion line isn't where the bug lives? Name the precise cross-file mismatch, explain why it typechecks yet duplicates only after a reconnect replay, and say how you'd fix it.",
+            "placeholder": "Cause (which file/line chooses the wrong dedup key), the tell, the failure mechanism, and the fix...",
+            "max_words": 200
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Single-file AI review says 'looks correct' for each file — the types are internally consistent, apply-op has a real Set-based guard, and the ws handler compiles. Pasting any one file (or the log) yields a symptom-level fix like 'add a check before doc.ops.push'. That never names WHY the guard fails to catch the replay. The bug only exists in the relationship: the wire contract (op.id is re-minted per send) + apply deduping on op.id + the reconnect-replay variant.",
+        "distinguishing_observable": "Did they connect the 'op.id is freshly minted on every send/replay' contract in types.ts to apply-op.ts deduping on `op.id`, and name that as the origin — so a replayed op (same clientSeq, NEW id) is not recognized as a duplicate — tying it to the 'only duplicates after a reconnect replay' tell, and prescribe deduping on the stable (clientId, clientSeq) key?",
+        "four_tuple": {
+          "flaw_location": "Cross-file mismatch between src/types.ts and src/apply-op.ts, surfacing in the document state via src/ws-server.ts. types.ts documents that `op.id` is minted FRESH on every send including replays, while `clientSeq` is the stable per-edit identity. apply-op.ts dedups using `appliedOps.has(op.id)` — the per-attempt id — so within one connection a literal resend (same id) is caught, but a reconnect replay carries the SAME clientSeq with a NEW id and is treated as a brand-new op, applied twice. The defect is not the doc.ops.push line and not the types declaration — it is the choice of dedup key in apply-op.ts contradicting the identity contract in types.ts.",
+          "the_tell": "It typechecks AND duplicates ONLY for one variant — reconnect replays — not for ordinary same-connection retries. That signature points away from a logic error at the push site (which would duplicate always) and toward a dedup keyed on the wrong field: a value the code treats as a stable identity that is actually regenerated per attempt. The log showing two rows with the same clientSeq but different op.id pairs the variant with the cause.",
+          "catching_looks_like": "Meets: locates the actual cause — points to apply-op.ts deduping on `op.id` while op.id is re-minted per replay, so the guard misses reconnect replays — rather than guarding the push line.",
+          "correcting_looks_like": "Above: names the dedup-key mismatch as the origin AND explains the mechanism end to end (types contract: id fresh per send, clientSeq stable -> apply keys its seen-Set on id -> a replay has same clientSeq but new id -> guard misses it -> op applied twice, but only when a reconnect replays an unacked op), explicitly cites the 'typechecks but duplicates only for the reconnect variant => wrong dedup key, not a logic error' tell, and fixes it by deduping on the stable (clientId, clientSeq) — ideally durably (a UNIQUE constraint), not just swapping the in-memory key."
+        },
+        "rubric_exemplars": {
+          "below": "Stops at the insertion site: 'guard doc.ops.push' or 'check for duplicates before applying' or blames the client for resending, without identifying that apply-op dedups on the wrong key (op.id).",
+          "meets": "Identifies the cross-file cause: apply-op.ts keys its seen-Set on op.id, but per types.ts op.id is regenerated on every replay, so a reconnect replay (same clientSeq, new id) bypasses the guard and applies twice. Connects it to the 'only after reconnect' variant.",
+          "above": "All of Meets PLUS the full mechanism and the explicit tell — 'typechecks yet duplicates for exactly the reconnect-replay variant means dedup on a non-stable identity, not a logic error at the push' — reached efficiently (types -> apply-op, little time wasted in the ws handler), and proposes deduping on the stable (clientId, clientSeq) key, durably enforced, rather than a band-aid before the push."
+        }
+      },
+      "source_policy": "bank-only — author-reviewed; not for live generation into production"
+    },
+    {
+      "sequence_index": 3,
+      "routing": {
+        "fit_reason": "J6 tests context-dependent triage under a live incident with one irreversible item (permanent edit loss); the 'dropping messages under load NOW' context is what reorders the stack, and J4 only tests a single fork. Near-orderings tighten at band 3.",
+        "ai_floor_hook": "AI gives a plausible generic 'scale it up' incident checklist but can't know edits are being lost permanently right now, nor that persisting-before-ack is the only irreversible-loss-stopping move vs reversible capacity/observability work."
+      },
+      "card": {
+        "method_id": "J6",
+        "skill_class": "Judgement",
+        "lever_id": "quiz",
+        "grading_mode": "Keyed",
+        "review": "Auto",
+        "title": "Incident: realtime edits are being dropped under load — order your first moves",
+        "instruction": "It's mid-afternoon and your realtime editor is under unusual load. Users report their edits sometimes never land — they type, and the change vanishes for everyone. Five actions are on the table and the team is arguing about what to touch first. You have one short window. Drag the five into the order you'd actually do them, most consequential first, then justify your top pick in one line.",
+        "time_cap_seconds": 300,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Realtime Backend Engineering",
+          "sub_skills": [
+            "Distributed Systems",
+            "Idempotency & Consistency",
+            "Postgres",
+            "Websockets"
+          ],
+          "domain": "AI-native Backend Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "Situation",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Live incident. Your realtime doc service is saturated: a hot ws node is at capacity and inbound ops are being dropped before they're persisted — those edits are lost, not queued. Five things are open and contested; pick what to do before you touch anything else.",
+            "subtitle": "Realtime backend incident — edits being lost under load (Node/TS + Postgres + queue + websockets)",
+            "blocks": [
+              "Open items the team is arguing about:",
+              "• Ops are ACKed and broadcast BEFORE they're written to the durable ops log — so when the saturated node drops an op (or crashes), that edit is gone for good and no one can recover it.",
+              "• The hot ws node is overloaded; adding instances + sticky/shared pub/sub would relieve it. Takes a deploy.",
+              "• Clients fire ops straight into a saturated socket with no backpressure or send-buffer; adding client-side buffering + retry would hold ops instead of losing them on a full socket.",
+              "• There's no dashboard for socket queue depth / drop rate, so we're guessing at the saturation point.",
+              "• The shared `Op` TypeScript types drifted from the server; new fields aren't typed in the editor. DX friction, no runtime effect."
+            ],
+            "rules": [
+              "most consequential first"
+            ],
+            "start_label": "Start"
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "ordered_steps",
+          "title": "Order the actions",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Drag these into the order you'd do them, most consequential first.",
+            "items": [
+              {
+                "id": "t_persist",
+                "label": "Persist each inbound op to the durable ops log and ack ONLY after the write, so saturated/crashing nodes stop losing edits permanently"
+              },
+              {
+                "id": "t_backpressure",
+                "label": "Add client-side send-buffering + backpressure/retry so ops are held (not fired into a full socket) and replay on reconnect"
+              },
+              {
+                "id": "t_scale",
+                "label": "Add websocket instances + sticky/shared pub-sub to relieve the overloaded node"
+              },
+              {
+                "id": "t_dashboard",
+                "label": "Stand up a dashboard for socket queue depth / drop rate to watch the saturation"
+              },
+              {
+                "id": "t_types",
+                "label": "Regenerate the shared Op TypeScript types that drifted from the server"
+              }
+            ],
+            "selection_mode": "ordered",
+            "correct_order": [
+              "t_persist",
+              "t_backpressure",
+              "t_scale",
+              "t_dashboard",
+              "t_types"
+            ],
+            "supporting_text": "HIDDEN — judge only. #1 t_persist: consequential AND irreversible — an op dropped before it's durably written is a user edit lost forever; persist-before-ack is the only move that stops permanent loss. #2 t_backpressure: stops MORE loss at the source and is replay-safe, but reversible/additive. #3 t_scale: relieves capacity, reversible. #4 t_dashboard: observability only, no data effect. #5 t_types: pure DX, no runtime effect."
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Why is #1 the #1",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "In one line: why is your #1 the #1?",
+            "max_words": 40
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "A candidate's AI returns a generic incident-response checklist and, cued by 'overloaded node', will often rank 'scale up / add instances' first on surface capacity optics. It cannot know that edits are being lost PERMANENTLY right now because ops are acked before they're persisted, nor that persisting-before-ack is the only move that stops irreversible loss while everything else is reversible capacity/observability/DX.",
+        "distinguishing_observable": "Is persist-before-ack (t_persist) #1 — ranked ABOVE the tempting 'scale the node' item — and is the one-line defense grounded in irreversibility (a dropped, never-persisted edit is lost forever), NOT in effort or generic 'fix performance first'?",
+        "key": {
+          "correct_order": [
+            "t_persist",
+            "t_backpressure",
+            "t_scale",
+            "t_dashboard",
+            "t_types"
+          ],
+          "accepted_near_orderings": [
+            [
+              "t_persist",
+              "t_scale",
+              "t_backpressure",
+              "t_dashboard",
+              "t_types"
+            ]
+          ],
+          "why_1": "Persisting before ack is the only item both consequential AND irreversible: an op dropped before it's durably written is a user edit that cannot be recovered. Every other item (more capacity, client buffering, a dashboard, type regen) is reversible, additive, or pure polish. Effort/ease is NOT an accepted basis.",
+          "_notes": "Band-3 calibration: t_persist MUST be #1 and t_types MUST be last; no other position for either is accepted. The single tolerated mid-swap is backpressure<->scale (positions 2 and 3). Ranking t_scale #1 over t_persist is NOT accepted — it indicates reasoning on capacity optics rather than irreversible data loss."
+        },
+        "rubric_exemplars": {
+          "below": "Ranks 'add instances / scale the node' #1 (fooled by capacity optics) with persist-before-ack below it, or buries it in the middle, or ranks a nice-to-have (dashboard/types) as urgent. One-line defense cites effort, ease, or generic 'fix the performance' rather than the specific irreversible edit loss.",
+          "meets": "Persist-before-ack (t_persist) is #1 and types regen (t_types) is last, with the middle three roughly right; the one-line defense correctly points at edits being lost permanently.",
+          "above": "Correct order (or the accepted backpressure<->scale near-ordering), AND a one-line defense that names irreversibility/blast-radius explicitly — a dropped, un-persisted edit can't be recovered — while distinguishing it from the reversible capacity and observability work."
+        }
+      }
+    },
+    {
+      "sequence_index": 4,
+      "routing": {
+        "fit_reason": "E1 is the only method that observes a real build with clean seams across the realtime stack (schema constraint <-> upsert <-> apply <-> replay must agree on ONE idempotency key) and carries trip stamina; the seeded split-idempotency-key seam is the un-AI-able verification step.",
+        "ai_floor_hook": "The candidate's AI emits every piece — migration, upsert, ws handler, client replay — and they compile; the latent server_op_id-vs-(client_id,client_seq) seam ships a duplicate-on-replay bug unless a human verifies a replay is actually a no-op. Working-AND-clean is the Above signal AI can't supply."
+      },
+      "card": {
+        "method_id": "E1",
+        "skill_class": "Execution",
+        "lever_id": "demo",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "Ship idempotent realtime op-apply end-to-end",
+        "instruction": "You're on the platform team of a realtime editor where the same op can arrive more than once (reconnect replay, a background snapshot worker). Build a working idempotent op pipeline on Node/TypeScript + Postgres: an `ops` table, a durable idempotency key so a replayed op is applied EXACTLY once, an apply path that no-ops on duplicates, and a proof that a replayed op does not change the document twice. Use your normal AI tooling. Done means: a fresh op applies and shows; a replayed op (same clientId+clientSeq, new send id) is a no-op — same row count, same doc revision. We care that it WORKS and that the seam is clean — ONE idempotency key across the schema constraint, the upsert, and the apply logic, enforced in the DB, not patched per-connection.",
+        "time_cap_seconds": 2700,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Realtime Backend Engineering",
+          "sub_skills": [
+            "Distributed Systems",
+            "Idempotency & Consistency",
+            "Postgres",
+            "Websockets"
+          ],
+          "domain": "AI-native Backend Engineering",
+          "target_band": "3",
+          "target_rung": "r3"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The brief",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Our realtime editor must apply each logical edit exactly once. The same op can show up more than once: a client replays unacked ops on reconnect (possibly to a different node), and a background worker re-applies ops to rebuild snapshots. Build the idempotent pipeline end-to-end on Node/TypeScript + Postgres. A logical edit is identified by (doc_id, client_id, client_seq) and keeps that key across retries; the per-send `id`/`server_op_id` changes every attempt and must NOT be the dedup key. Auth and transport are already wired — focus on persist + dedup + apply.",
+            "subtitle": "Realtime backend · exactly-once apply · Node/TS + Postgres + queue",
+            "blocks": [
+              "Stack is fixed: Node/TypeScript service + Postgres. A websocket layer and a background queue both call into your apply path.",
+              "A logical edit's durable identity is (doc_id, client_id, client_seq). The per-send id is fresh on every attempt — never dedup on it.",
+              "Two things must be true at once: (1) it WORKS — a fresh op applies and renders, a replayed op is a no-op; (2) idempotency is enforced in the DATABASE via ONE consistent key used by the schema constraint, the upsert's ON CONFLICT target, and the apply logic.",
+              "Use your own AI tooling exactly how you normally would. Screen-record / capture the session including the moment you prove a replay is a no-op (same row count and same doc revision before/after)."
+            ],
+            "highlight": "Use your normal AI tooling. Capture the build, including the replay-is-a-no-op proof."
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "ordered_steps",
+          "title": "What to build",
+          "response_expected": false,
+          "body_json": {
+            "steps": [
+              "STANDARD VARIANT — build from scratch:",
+              "1. Schema: create an `ops` table storing at least { doc_id, client_id, client_seq, kind, payload, created_at }. Add a UNIQUE constraint on the durable idempotency key (doc_id, client_id, client_seq).",
+              "2. Persist + dedup: an insert that no-ops a duplicate — INSERT ... ON CONFLICT (doc_id, client_id, client_seq) DO NOTHING — and only applies/advances doc state when a row was actually inserted.",
+              "3. Apply path: apply an op to the document exactly once, used by BOTH the live handler and the background snapshot rebuild — no per-connection in-memory dedup doing the real work.",
+              "4. Proof: show a replayed op (same client_id+client_seq, new send id) leaves row count and doc revision unchanged.",
+              "Working output = a fresh op applies and renders; a replay is a no-op. Above = working AND clean: ONE idempotency key across schema/upsert/apply, enforced in the DB, no per-attempt id used for dedup, no duplicated apply logic."
+            ],
+            "variant_chunk_match": {
+              "prompt": "CHUNK-MATCH VARIANT — reconcile, don't rebuild from zero. Your AI assistant already produced four pieces that SHOULD form this pipeline. Individually each compiles and looks fine. Wired together they DUPLICATE ops on reconnect, because the pieces do not agree on what identifies a logical edit. Your job: make them work as ONE pipeline with a single consistent idempotency key, enforced in the DB, and prove a replay is a no-op — within the time cap.",
+              "pieces": [
+                "PIECE 1 - schema migration (db/migrations/0001_ops.sql):\ncreate table public.ops (\n  server_op_id uuid primary key default gen_random_uuid(),\n  doc_id       uuid not null references public.docs(id),\n  client_id    uuid not null,\n  client_seq   bigint not null,\n  kind         text not null,\n  payload      jsonb not null,\n  created_at   timestamptz not null default now()\n);\n-- dedup is meant to be enforced here, by a UNIQUE constraint:\ncreate unique index ops_idem on public.ops (doc_id, server_op_id);\n-- (note: the unique index keys on SERVER_OP_ID)",
+                "PIECE 2 - idempotent insert (lib/persist-op.ts):\nexport async function persistOp(db: Db, op: Op) {\n  // Rely on the unique index to no-op on a duplicate replay.\n  await db.query(\n    `insert into ops (doc_id, client_id, client_seq, kind, payload)\n     values ($1,$2,$3,$4,$5)\n     on conflict (doc_id, client_id, client_seq) do nothing`,\n    [op.docId, op.clientId, op.clientSeq, op.kind, op.payload],\n  );\n}\n// the upsert keys ON CONFLICT by (doc_id, client_id, client_seq)",
+                "PIECE 3 - ws receive (src/ws-server.ts):\nsocket.on('op', async (op: Op) => {\n  // Stamp a fresh server id for every received frame, including replays.\n  const stamped = { ...op, serverOpId: crypto.randomUUID() };\n  await persistOp(db, stamped);\n  broadcast(op.docId, stamped);\n  socket.send({ type: 'ack', clientSeq: op.clientSeq });\n});\n// every received frame (incl. a reconnect replay) gets a NEW serverOpId",
+                "PIECE 4 - client send/replay (src/client/outbox.ts):\nfunction send(op: Op) {\n  socket.emit('op', op);            // first attempt\n}\nfunction onReconnect() {\n  for (const op of outbox.unacked()) socket.emit('op', op); // replay, same clientSeq\n}\n// a replayed op carries the SAME clientSeq, the server stamps a NEW serverOpId"
+              ],
+              "seeded_conflict": "The UNIQUE index (Piece 1) keys idempotency on (doc_id, server_op_id), but server_op_id is minted FRESH on every received frame (Piece 3), including reconnect replays. The upsert (Piece 2) instead says ON CONFLICT (doc_id, client_id, client_seq) - a key the table has no unique constraint for, so `on conflict ... do nothing` can never fire and Postgres would in fact error (no matching unique index) or, if the index were 'fixed' to match server_op_id, the replay (new server_op_id) is always treated as new -> the op is inserted and applied TWICE. The pieces compile and the happy-path demo looks fine because without a dropped socket nothing replays. The fix is ONE idempotency key end to end: choose (doc_id, client_id, client_seq) as the durable identity of a logical edit, put the UNIQUE constraint on exactly those columns, make the ON CONFLICT target match, and stop using the per-attempt server_op_id for dedup. Then prove a replayed op is a no-op (same row count, same doc revision) rather than 'making the columns line up' without verifying the duplicate is actually suppressed."
+            }
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "reflection",
+          "interaction_type": "display",
+          "title": "How we evaluate",
+          "response_expected": false,
+          "body_json": {
+            "guidance": "We care that it WORKS and that the SEAM is clean. Working means: a fresh op applies and renders, and a replayed op (same client_id+client_seq, new send id) is a no-op — same row count, same doc revision. Clean means: ONE idempotency key (doc_id, client_id, client_seq) used by the schema's UNIQUE constraint, the upsert's ON CONFLICT target, AND the apply logic; dedup enforced in the database, not in a per-connection in-memory Set; the per-attempt server/send id is NOT used for dedup; no duplicated apply logic. If you accept AI-generated pieces, the interesting part is the seam where they're supposed to agree on the key — show us you verified a replay actually no-ops.",
+            "links": []
+          }
+        },
+        {
+          "sequence_index": 3,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Walk us through the seam",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Walk us through what you built. Specifically: what is your idempotency key, which layer enforces exactly-once and why there, and where exactly did you verify the pieces agree? If you worked from the given pieces, tell us what was wrong at the seam, how you proved a replay returns a no-op, and what you changed to make the key consistent.",
+            "placeholder": "e.g. 'The idempotency key is (doc_id, client_id, client_seq). The single source of truth is the UNIQUE constraint on ops; the upsert's ON CONFLICT targets the same columns; apply only advances revision when a row was inserted, so a replay (same key, new send id) no-ops because...'",
+            "min_words": 60,
+            "max_words": 300
+          }
+        },
+        {
+          "sequence_index": 4,
+          "sub_card_type": "task",
+          "interaction_type": "repo_task",
+          "title": "Build it and submit your repo",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Build the idempotent realtime op pipeline. Grab the starter, add the UNIQUE idempotency key + dedup on (doc_id, client_id, client_seq), make apply no-op on replays, and prove a replayed op doesn't double-apply. Then submit your work as a .zip.",
+            "required": true,
+            "starter_repo": {
+              "name": "realtime-ops-starter",
+              "zip_url": "/repos/realtime-ops-starter.zip",
+              "github_url": "https://github.com/Omramanuj/cloud-code-editor"
+            }
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "The candidate's AI emits all four pieces — table, upsert, ws handler, client replay — and they compile and 'work' in a happy-path demo where nothing reconnects, so nothing replays. AI will also confidently 'reconcile' the chunk-match pieces by making the UNIQUE index and the ON CONFLICT target use the same column, often settling on the per-attempt server_op_id, and declare it fixed. What AI does NOT give for free: recognizing the seam conflict is a SPLIT IDEMPOTENCY KEY (UNIQUE on server_op_id vs ON CONFLICT on (client_id, client_seq)) that duplicates on replay, choosing the stable (doc_id, client_id, client_seq) as the one key, enforcing it in the DB, and actually proving a replay is a no-op.",
+        "distinguishing_observable": "Does the deliverable actually work at the seam — a fresh op applies, a replay is a no-op (same row count + revision) — AND is there ONE idempotency key (doc_id, client_id, client_seq) used by the UNIQUE constraint, the ON CONFLICT target, and the apply logic, enforced by the DB, with the per-attempt server/send id NOT used for dedup and no duplicated apply path?",
+        "working_output_definition": "On the idempotent op pipeline: (1) a fresh op (doc_id, client_id, client_seq) inserts, applies, and advances doc revision once; (2) a replayed op with the SAME (doc_id, client_id, client_seq) but a new send id is a NO-OP — row count and doc revision unchanged; (3) the apply path is shared by the live handler and the background snapshot rebuild and both stay exactly-once; (4) both the standard build and the reconciled chunk-match build satisfy 1-3.",
+        "harness_checks": [
+          "fresh_apply_test: inserting an op with a new (doc_id, client_id, client_seq) creates exactly one row and advances doc revision by one.",
+          "replay_noop_test: re-submitting the same (doc_id, client_id, client_seq) with a different send id inserts ZERO new rows and leaves doc revision unchanged.",
+          "db_is_the_enforcer_test: with any in-memory/per-connection dedup bypassed, the replay STILL no-ops — proves idempotency lives in the DB (UNIQUE + ON CONFLICT), not in app/socket memory.",
+          "single_key_test: the UNIQUE constraint, the upsert's ON CONFLICT target, and the apply logic all key off the SAME columns (doc_id, client_id, client_seq); the per-attempt server/send id is not used for dedup. (Static check on migration + persist fn.)",
+          "worker_path_test: the background snapshot rebuild re-applying the same ops produces the same final revision (no double-apply) because it shares the durable dedup.",
+          "render_both_variants_test: a fresh op renders for both the standard and chunk-match reconciled builds without runtime error."
+        ],
+        "rubric_exemplars": {
+          "below": "Doesn't work or isn't clean at the seam: ships the chunk-match pieces as-is (UNIQUE on server_op_id, ON CONFLICT on (client_id, client_seq)) so replays duplicate; OR 'reconciles' by aligning both onto the per-attempt server_op_id (which never collides on replay, so still duplicates); OR dedup is carried by an in-memory Set that the worker/replay bypasses; OR no replay-is-a-no-op proof.",
+          "meets": "Working, complete deliverable meeting the working-output definition: a fresh op applies, a replay no-ops, both live and worker paths stay exactly-once. Idempotency holds, but the key model may still be partly redundant (e.g. DB UNIQUE plus a belt-and-suspenders in-memory dedup) or there's minor duplicated apply logic — it works but isn't fully clean.",
+          "above": "Working AND clean: ONE idempotency key (doc_id, client_id, client_seq) across schema UNIQUE, ON CONFLICT, and apply; enforced in the database; the per-attempt server/send id is removed as a dedup key rather than 'matched'; the apply path is shared by live + worker with no duplication; and the candidate verifies a replay is a no-op (same row count + revision, ideally with in-memory dedup bypassed to prove the DB is the enforcer). Names the Speed-vs-Quality and AI-Leverage-vs-Engineering-Depth tradeoff explicitly.",
+          "_tension_framing": "Speed vs Quality: the chunk-match pieces let you 'finish' in minutes by accepting compiling AI output, but quality is the duplicate-on-replay you only avoid by unifying the key and proving the no-op. AI Leverage vs Engineering Depth: leverage gets you four pieces that compile; depth is recognizing the split server_op_id/(client_id,client_seq) key, collapsing it to one DB-enforced key, deleting the per-attempt dedup, and proving a replay no-ops."
+        }
+      },
+      "source_policy": "bank-seeded — template reviewed once, params vary"
+    }
+  ]
+}

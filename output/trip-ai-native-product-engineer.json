@@ -1,0 +1,512 @@
+{
+  "trip_plan": {
+    "domain": "AI Native Product Engineering",
+    "role": "Fresher / entry-level AI-native product engineer (Next.js/TS/Supabase, Bangalore startup)",
+    "target_band": "1",
+    "default_rung": "r2",
+    "total_time_cap_seconds": 4800,
+    "classes_covered": [
+      "Judgement",
+      "Cognition",
+      "Execution"
+    ],
+    "card_sequence": [
+      "J1",
+      "J4",
+      "C3",
+      "E1"
+    ],
+    "stamina_note": "Closing E1 full-stack Prompt Library build (45 min) is the sustained-work card that makes stamina observable; the preceding C3 read-and-trace (20 min) adds a second focus-heavy block so endurance shows across the back half.",
+    "coverage_gaps": "None — all three classes covered. Items in teachable_vs_innate.already_exist (curiosity, ownership, communication, learn-independently, persistence) intentionally untested. 'GitHub profile with visible work' is a pre-trip screen, not a card. 'Comfortable with JS/TS' exercised as reasoning inside C3 + E1, not as trivia.",
+    "calibration_note": "Fresher band 1 / rung r2: 4 cards, single-seam scenarios, generous time, gentler ambiguity. J6 (priority-stack) dropped — no triage/incident must_have and band-1 cap is 4. AI floor enforced at every card. Dominant role tension threaded throughout: AI Usage vs Understanding (AI accelerates, does not replace thinking).",
+    "generated_from": "InferenceCards (user-supplied JD) -> trip-orchestrator.md -> method-generators.md (J1/J4/C3/E1), generators run as parallel agents.",
+    "routing_log": [
+      {
+        "skill": "Product Thinking / scope a vague feature ask",
+        "class": "Judgement",
+        "chosen_method": "J1",
+        "slice": "supabase_sql",
+        "runners_up": [
+          "J4: presupplies the options, can't test probing",
+          "E1: tests building not framing"
+        ]
+      },
+      {
+        "skill": "Database Usage / access-control decision",
+        "class": "Judgement",
+        "chosen_method": "J4",
+        "slice": "supabase_sql",
+        "runners_up": [
+          "J1: too open for a single constraint-forced fork",
+          "J6: an ordering, not a decision"
+        ]
+      },
+      {
+        "skill": "Debugging / distrust the green typecheck",
+        "class": "Cognition",
+        "chosen_method": "C3",
+        "slice": "nextjs_ts",
+        "runners_up": [
+          "E1: would test building, not root-cause tracing",
+          "C3@supabase: weaker than the TS lying-cast on the Next+TS slice"
+        ]
+      },
+      {
+        "skill": "Rapid Product Development / ship end-to-end",
+        "class": "Execution",
+        "chosen_method": "E1",
+        "slice": "supabase+next",
+        "runners_up": [
+          "C3: read-only, doesn't observe a build",
+          "J4: a single decision, not an integration"
+        ]
+      },
+      {
+        "skill": "Curiosity / Ownership / Communication / Persistence",
+        "class": "(already_exist)",
+        "chosen_method": "(dropped)",
+        "slice": "-",
+        "runners_up": [
+          "assumed present per teachable_vs_innate.already_exist — no card spent"
+        ]
+      }
+    ]
+  },
+  "cards": [
+    {
+      "sequence_index": 0,
+      "routing": {
+        "fit_reason": "J1 Voice is the only method that tests whether the candidate PROBES before building; the prompt-template ask bundles 'save' (private) with 'share' (undefined scope) — a clean per-actor visibility omission a fresher who reaches for a 'templates' table misses.",
+        "ai_floor_hook": "The candidate's AI instantly returns a generic templates schema + CRUD; it will NOT ask 'who is a shared template visible to — one teammate, the workspace, or everyone — and who may edit it?' unprompted."
+      },
+      "card": {
+        "method_id": "J1",
+        "skill_class": "Judgement",
+        "lever_id": "voice",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "\"Let people save and share prompt templates\"",
+        "instruction": "A teammate stops by your desk with a quick feature idea for our AI product. Listen to the ask, then restate it in your own words so they know you've got it, and ask whatever you need to ask before you'd start building anything. Don't propose a solution, a schema, or a table yet — just make sure you've understood the real problem first.",
+        "time_cap_seconds": 600,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Product Thinking",
+          "sub_skills": [
+            "Product Thinking",
+            "User Empathy",
+            "Scoping a vague feature ask"
+          ],
+          "domain": "AI Native Product Engineering",
+          "target_band": "1",
+          "target_rung": "r2"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The ask",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Rahul from product leans over with his laptop: \"Quick one for you. Our power users keep retyping the same prompts into the assistant — same wording, every day. A few have literally messaged us asking if they can just save their good prompts somewhere and reuse them. And honestly it'd be great if they could share the really good ones too, so the whole thing levels up. Can you build us a prompt templates feature? Save a prompt, give it a name, reuse it, share it. Nothing huge. You think you can set that up?\"",
+            "subtitle": "You're a few weeks into a fresher role at an AI-native product startup. Stack is Next.js (App Router) + Supabase. Rahul is friendly, busy, and hasn't thought through the details.",
+            "blocks": [
+              "The app already has signed-in users, and many of them belong to the same company team / workspace.",
+              "There's an assistant screen where people type prompts and get AI output.",
+              "Rahul is happy to answer questions — he just dropped the idea as a one-liner and is figuring it out as he goes."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "voice_exchange",
+          "title": "Restate, then probe",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Restate the problem in your own words, then ask whatever you need before proposing anything. Don't jump to a schema, a table, or a solution yet — first make sure you understand who this is for and what they actually need.",
+            "turn_mode": "multi_turn",
+            "max_turns": 4,
+            "expected_signal": "restate + impact-ranked probing questions, leading with WHO can see whose templates (saving is private-to-creator; 'share' is a separate visibility decision — to one person? the team? everyone?)",
+            "_hidden_omissions": [
+              {
+                "rank": 1,
+                "fact": "The ask quietly bundles two different visibility rules under one word. 'Save a prompt' is private-to-the-creator (only I see my saved templates). 'Share it' is a SEPARATE multi-actor visibility decision the brief never defines: share with one specific teammate? with my whole team/workspace? make it public to every user of the app? And once shared, who can edit or delete it — only the author, or anyone who can see it? Nobody stated who is allowed to see, or change, whose template.",
+                "why_it_changes_the_approach": "This single unstated rule decides the entire data model and access design. If saved templates are private but shareable to a team, every template needs an owner (user_id) AND a visibility/scope notion (private vs shared-to-team), and every read must be scoped to 'templates I own OR templates shared into a team I'm in' — enforced, e.g. via a Supabase row-level policy, not just filtered in UI. Miss it and you build one of two broken things: a private-only table that can't actually share, or a global list where everyone in every company sees everyone's prompts — a privacy/leak break that's expensive to retrofit once data exists."
+              },
+              {
+                "rank": 2,
+                "fact": "Who exactly are the users that share with each other — is 'share' scoped to the people inside one company/workspace, or is it across the whole user base of the app? The brief says 'the whole thing levels up' without saying whose 'whole thing'.",
+                "why_it_changes_the_approach": "Determines the boundary the visibility rule is scoped to (a team_id / workspace, vs global). It defines what 'shared' even means and which rows a given user is allowed to read; without it you can't write the read-scoping rule correctly."
+              },
+              {
+                "rank": 3,
+                "fact": "What is actually saved as a 'template' — just the prompt text plus a name, or also model settings / variables / placeholders the user fills in each time?",
+                "why_it_changes_the_approach": "Shapes the columns the template needs and whether the reuse flow is a plain copy-into-the-box or a fill-in-the-blanks step. Affects the table shape and the UI, but not the core ownership/visibility model."
+              },
+              {
+                "rank": 4,
+                "fact": "After saving, can a user edit, rename, or delete their own templates — and is there a way to organize them (folders/tags) when they pile up?",
+                "why_it_changes_the_approach": "Decides whether there are update/delete actions and grouping, which adds routes and UI but does not change who-can-see-what."
+              }
+            ]
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasting this brief into an AI assistant yields an instant, competent-looking answer: a single prompt_templates table (id, name, prompt_text, created_at), a save action, a list page, and maybe an is_shared boolean — plus a confident restatement of the ask. The AI summarizes the feature fine, but it does NOT, unprompted, separate the two visibility rules hiding in one sentence — that 'save' is private-to-creator while 'share' is an undefined multi-actor scope (one teammate? the team? everyone?) — nor ask who is allowed to see, or change, whose template before any data model is chosen. It silently assumes a generic shape. That generic restatement-plus-schema, with visibility hand-waved as a boolean, is the Below floor. (Tension in play: AI Usage vs Understanding — the AI accelerates to a schema; the human's job is to NOT skip the thinking about who-sees-whose.)",
+        "distinguishing_observable": "Did they surface the #1 omitted constraint UNPROMPTED — that 'save' (private to me) and 'share' (visible to others) are two different visibility rules, and that 'share' is undefined: to one person, to my team/workspace, or to everyone? — and lead with WHO-can-see-whose over cosmetic details, ordering their probes by impact rather than asking a long flat list?",
+        "rubric_exemplars": {
+          "below": "\"Cool, so a prompt templates feature — users save prompts with a name and can share them. I'll spin up a table for templates and a page to list and reuse them. Should there be a star icon or a bookmark icon to save? Do you want them sorted newest-first or alphabetically? What should we call the button?\" — restates the surface ask, reaches straight for a generic table, and asks only cosmetic questions, never touching who is allowed to see whose templates.",
+          "meets": "\"So signed-in users want to save a prompt as a reusable named template and reuse it later, and also share good ones with others. Before I build anything — when someone shares a template, who should be able to see it? Just their own team, or every user of the app? And are saved-but-not-shared templates private to the person who made them?\" — accurate restatement and asks at least one genuinely decision-relevant question that lands on the sharing visibility.",
+          "above": "\"Let me play it back: users want to save a prompt as a named template, reuse it, and share the good ones. The thing I most want to pin down first is visibility, because it decides how I store and protect this. I'm reading two different rules in one sentence: 'save' sounds private — only I see my own templates — but 'share' is open-ended. Do you mean share with one specific teammate, with my whole company's workspace, or make it visible to every user of the product? And once something's shared, can other people edit or delete it, or only the author? Once I know who's allowed to see and change whose template, the rest is smaller: what exactly a template holds — just the prompt and a name, or variables too — and whether people can rename, delete, and organize them.\" — restates accurately AND names the unstated multi-actor visibility rule as the thing that changes the approach, separates private-save from shared-scope, leads with it, and orders the remaining questions by impact."
+        }
+      }
+    },
+    {
+      "sequence_index": 1,
+      "routing": {
+        "fit_reason": "RLS-vs-app-filter is a real Supabase fork; J4 forces a commit. The constraint (same prompt_library table read from multiple routes) makes the DB-layer policy strictly stronger — J1 too open, J6 not a decision.",
+        "ai_floor_hook": "The candidate's AI already handed over a working `.eq(owner_id, ...)` filter that looks done; it won't flag that one forgotten route leaks every user's library. Signal = recognising the constraint forces enforcement at the unbypassable layer."
+      },
+      "card": {
+        "method_id": "J4",
+        "skill_class": "Judgement",
+        "lever_id": "quiz",
+        "grading_mode": "Banded",
+        "review": "Auto",
+        "title": "Keeping each user's saved prompt library private",
+        "instruction": "Your app lets every user build a personal prompt library — reusable prompts they save and pull up later. All of these saved prompts live in one Supabase table that, right now, is readable by anyone. Two teammates each propose a way to guarantee a user only ever sees prompts from their own library. Important context: this same table is read from more than one place in the app. Read the brief, pick the option you'd ship, then defend it: why this one under the stated constraint, and the exact condition under which you'd switch.",
+        "time_cap_seconds": 300,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Database Usage",
+          "sub_skills": [
+            "Database Usage",
+            "Backend Fundamentals"
+          ],
+          "domain": "AI Native Product Engineering",
+          "target_band": "1",
+          "target_rung": "r2"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The setup",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Each user of your app builds a private prompt library — reusable prompts they save and reuse. Every saved prompt is a row in one Supabase table, prompt_library, with an owner_id column for the user who created it. The rule you must guarantee: a user can only ever read prompts from their own library, never anyone else's. An AI assistant already handed your teammate a working fetch with a .eq('owner_id', currentUserId) filter, so the dashboard query 'looks done'. Two ways to actually enforce the rule are on the table.",
+            "subtitle": "AI Native Product Engineering — Supabase / Next.js (App Router)",
+            "rules": [
+              "The same prompt_library table is read from several places: the library page, a 'recent prompts' picker inside the generation screen, a search server action, and a public-share preview route.",
+              "Option A — Add a Supabase Row-Level Security (RLS) policy on prompt_library so the database itself only returns rows where owner_id matches the logged-in user, on every read, no matter which route asks.",
+              "Option B — Skip RLS. In each Next.js fetch and server action that reads the table, add .eq('owner_id', currentUserId) so the query asks only for the current user's rows — the same filter the AI already generated for the dashboard."
+            ],
+            "start_label": "Start"
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "choice_buttons",
+          "title": "Pick the option you'd ship",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Pick the option you'd ship.",
+            "options": [
+              {
+                "id": "a",
+                "label": "Option A — One RLS policy on the prompt_library table; the database filters to the user's own rows on every read, from any route.",
+                "value": "a"
+              },
+              {
+                "id": "b",
+                "label": "Option B — Add the AI-generated .eq('owner_id', currentUserId) filter in each Next.js read; no RLS.",
+                "value": "b"
+              }
+            ],
+            "selection_mode": "single",
+            "correct_answer": "a"
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Defend your pick",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Defend your pick: why this one given that the same prompt_library table is read from several routes and server actions, and when would you switch to the other option?",
+            "placeholder": "I'd ship Option ___ because... It's safer when the table is read from many places because... I'd switch to the other one if...",
+            "max_words": 150
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasted in, the candidate's AI argues both sides ('both work — RLS is more robust, a code filter is simpler') or just hands over the app-layer .eq('owner_id', ...) snippet, since that one-line query filter is the most common pattern in its training and already 'looks done' in the dashboard. A candidate who offloads the decision inherits Option B and an 'it's simpler / it's the filter the AI gave me' justification — the red_flag of using AI output without reasoning about where the rule must actually live.",
+        "distinguishing_observable": "Did they pick Option A (RLS) AND reason from the stated constraint — prompt_library is read from multiple routes and server actions, so a per-query code filter must be remembered and repeated correctly in every one (including new ones), and a single miss leaks another user's saved prompts, whereas RLS is enforced once at the database for every read automatically — AND name the switch condition?",
+        "stronger_option": {
+          "id": "a",
+          "why": "The same prompt_library table is read from several routes and server actions (library page, recent-prompts picker, search action, share-preview route). A code-only owner_id filter has to be added, correctly, in every one of those reads and every future one; forget it in a single place — easy when the AI hands you a query that already 'looks done' — and that read returns other users' private prompts. RLS enforces the rule once at the database, so it holds for every read automatically, including routes added later by anyone."
+        },
+        "tradeoff_axis": "unbypassable-enforcement (the rule lives once at the DB and holds on every read from any route) vs app-code-simplicity (a familiar one-line query filter the AI already generated, but one that must be repeated correctly in every place that reads the table)",
+        "rubric_exemplars": {
+          "below": "Can't commit, or picks Option B for a surface reason — 'it's simpler', 'it's the filter the AI already wrote', or 'the dashboard query already works' — missing that the table is read from several places so the code filter is easy to forget on one of them and leak other users' prompts.",
+          "meets": "Picks Option A (RLS) with a valid reason, e.g. 'RLS protects the data at the database itself so users can't read each other's saved prompts, no matter which route does the read.'",
+          "above": "Picks Option A, names the tradeoff axis — RLS is enforced once at the DB for every read while the in-code filter has to be repeated correctly in all the read sites and any new one, so one forgotten filter (the AI snippet that 'looks done') leaks another user's private prompts — AND states the switch condition (e.g. 'if the table were read from exactly one place and never reused I'd accept the in-code filter, or I'd add RLS as the backstop and still filter in code for clarity')."
+        }
+      }
+    },
+    {
+      "sequence_index": 2,
+      "routing": {
+        "fit_reason": "Type-lie bug on Next+TS is the sharpest 'distrust the green checkmark' test; the lying `as number` cast typechecks but crashes only for null-quota rows. E1 would test building, not tracing the cross-file cause.",
+        "ai_floor_hook": "Single-file AI review says 'looks correct' — in isolation each file is. The bug lives only in the cross-file relationship (cast asserts non-null, migration leaves the column nullable); AI can't see it without all three files + the framing."
+      },
+      "card": {
+        "method_id": "C3",
+        "skill_class": "Cognition",
+        "lever_id": "live_ide",
+        "grading_mode": "Trap",
+        "review": "Auto",
+        "title": "Usage dashboard crashes — but only for some workspaces",
+        "instruction": "Our team \"AI Usage\" dashboard (Next.js App Router, TypeScript, Supabase) lists each workspace member with their monthly token quota. It typechecks cleanly — tsc --noEmit exits 0, the editor shows no red squiggles, and CI is green — and it renders fine for most workspaces. But for a subset of workspaces it crashes at runtime with a TypeError. Three read-only files are open below: the client table component, the server data loader that reads from Supabase, and the SQL migration that defines the column. Read the code and the error evidence, find the ACTUAL cause (not the line that throws), and explain the failure mechanism and the tell that points away from the crash site. You cannot run or edit the code, and you do not have an AI assistant for this card — just read.",
+        "time_cap_seconds": 1200,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Debugging",
+          "sub_skills": [
+            "Debugging",
+            "Frontend Development"
+          ],
+          "domain": "AI Native Product Engineering",
+          "target_band": "1",
+          "target_rung": "r2-r3"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The symptom",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "The AI Usage dashboard renders the member list fine for almost every workspace, but for a handful of workspaces it crashes at runtime with an Uncaught TypeError. The build is green and the page is server-rendered without error — the crash happens while the client table renders one of the rows.",
+            "subtitle": "Surfaces in the client member table, but only for workspaces that contain at least one legacy member (one created before per-member quotas were introduced).",
+            "blocks": [
+              "Browser console:  Uncaught TypeError: Cannot read properties of null (reading 'toLocaleString')",
+              "Stack (top frame):  MemberQuotaTable.tsx:24  formatQuota -> member.monthlyQuota.toLocaleString()",
+              "Server log:  [usage] GET /workspaces/ws_8841/usage 200 — loaded 6 members for workspace ws_8841 (quota counts: set=5, null=1)",
+              "Server log:  [usage] GET /workspaces/ws_2207/usage 200 — loaded 4 members for workspace ws_2207 (quota counts: set=4, null=0)   <- this workspace never crashes",
+              "Note: tsc --noEmit exits 0. ESLint clean. The crash reproduces ONLY when the member list contains at least one row where monthlyQuota is null."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "code_surface",
+          "title": "Read-only: the three relevant files",
+          "response_expected": false,
+          "body_json": {
+            "mode": "read_only",
+            "files": [
+              {
+                "path": "app/workspaces/[id]/usage/MemberQuotaTable.tsx",
+                "language": "typescript",
+                "content": "'use client';\n\nimport type { WorkspaceMember } from '@/lib/usage/members';\n\n/**\n * Renders the per-member quota table on the AI Usage dashboard.\n * Each member has a monthly token quota we display formatted with thousands\n * separators, alongside how much of it they've used this billing period.\n */\nexport function MemberQuotaTable({ members }: { members: WorkspaceMember[] }) {\n  return (\n    <table className=\"usage-table\">\n      <thead>\n        <tr>\n          <th>Member</th>\n          <th>Used this month</th>\n          <th>Monthly quota</th>\n          <th>Remaining</th>\n        </tr>\n      </thead>\n      <tbody>\n        {members.map((member) => {\n          // monthlyQuota is a number per the WorkspaceMember type, so we can\n          // format and do arithmetic on it directly.\n          const quota = member.monthlyQuota.toLocaleString();\n          const remaining = (member.monthlyQuota - member.tokensUsed).toLocaleString();\n          return (\n            <tr key={member.id}>\n              <td>{member.displayName}</td>\n              <td>{member.tokensUsed.toLocaleString()}</td>\n              <td>{quota}</td>\n              <td>{remaining}</td>\n            </tr>\n          );\n        })}\n      </tbody>\n    </table>\n  );\n}\n"
+              },
+              {
+                "path": "lib/usage/members.ts",
+                "language": "typescript",
+                "content": "import 'server-only';\nimport { createServerClient } from '@/lib/supabase/server';\n\n/**\n * View-ready shape consumed by the AI Usage dashboard. Every member has a\n * numeric monthly token quota and a running used-this-month total.\n */\nexport type WorkspaceMember = {\n  id: string;\n  displayName: string;\n  monthlyQuota: number;\n  tokensUsed: number;\n};\n\n/**\n * The raw row as stored in Supabase (table: public.workspace_members).\n * `monthly_quota` was added later, so it is an integer column that is NULL for\n * members created before per-member quotas existed (the legacy/unlimited plan).\n */\ntype WorkspaceMemberRow = {\n  id: string;\n  display_name: string;\n  monthly_quota: number | null;\n  tokens_used: number;\n};\n\n/**\n * Loads every member of a workspace and adapts each persisted row into the\n * view-ready `WorkspaceMember` shape the /usage dashboard renders.\n */\nexport async function getWorkspaceMembers(\n  workspaceId: string,\n): Promise<WorkspaceMember[]> {\n  const supabase = createServerClient();\n\n  const { data, error } = await supabase\n    .from('workspace_members')\n    .select('id, display_name, monthly_quota, tokens_used')\n    .eq('workspace_id', workspaceId)\n    .order('display_name', { ascending: true });\n\n  if (error) throw new Error(`failed to load members: ${error.message}`);\n\n  const rows = (data ?? []) as WorkspaceMemberRow[];\n\n  console.log(\n    `[usage] loaded ${rows.length} members for workspace ${workspaceId} ` +\n      `(quota counts: ${summariseQuota(rows)})`,\n  );\n\n  return rows.map((row) => ({\n    id: row.id,\n    displayName: row.display_name,\n    // monthly_quota is typed `number | null`, but the dashboard wants the\n    // non-null `number` that WorkspaceMember promises, so hand it across.\n    monthlyQuota: row.monthly_quota as number,\n    tokensUsed: row.tokens_used,\n  }));\n}\n\nfunction summariseQuota(rows: WorkspaceMemberRow[]): string {\n  let set = 0;\n  let nul = 0;\n  for (const r of rows) (r.monthly_quota === null ? (nul += 1) : (set += 1));\n  return `set=${set}, null=${nul}`;\n}\n"
+              },
+              {
+                "path": "supabase/migrations/0007_add_member_quotas.sql",
+                "language": "sql",
+                "content": "-- 0007_add_member_quotas.sql\n-- Introduce per-member monthly token quotas on the AI Usage dashboard.\n--\n-- workspace_members already existed (one row per (workspace, user)). Before\n-- this migration there was no notion of a per-member quota: members on the\n-- original \"unlimited\" plan simply had no cap. We add the column nullable so we\n-- don't have to invent a number for those pre-existing members; NULL means\n-- \"legacy / unlimited, no per-member quota\".\n\nALTER TABLE public.workspace_members\n  ADD COLUMN monthly_quota integer;  -- nullable on purpose: NULL = legacy/unlimited member\n\n-- Backfill a default quota ONLY for members on a metered plan. Members on the\n-- legacy 'unlimited' plan are intentionally left NULL.\nUPDATE public.workspace_members m\nSET monthly_quota = 1000000\nFROM public.workspaces w\nWHERE m.workspace_id = w.id\n  AND w.plan <> 'unlimited'\n  AND m.monthly_quota IS NULL;\n\n-- New metered members get a default at insert time; legacy members keep NULL.\nALTER TABLE public.workspace_members\n  ALTER COLUMN monthly_quota SET DEFAULT 1000000;\n\n-- NOTE: no NOT NULL constraint is added — legacy/unlimited members must remain\n-- NULL, and any workspace still on the 'unlimited' plan keeps NULL quotas.\n"
+              }
+            ],
+            "capture": [
+              "grep_targets",
+              "files_opened",
+              "navigation_path",
+              "time_to_cause"
+            ]
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Diagnose the cause",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "What is the ACTUAL cause of the crash, and what was the tell that told you the crash site wasn't where the bug lives? Name the precise cross-file mismatch, explain why it typechecks yet crashes only for workspaces that contain a legacy member, and say how you'd fix it.",
+            "placeholder": "The real cause is... The tell was... It crashes because...",
+            "max_words": 200
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Each file pasted into an AI on its own reads as correct: MemberQuotaTable.tsx is a clean typed .map over WorkspaceMember[], lib/usage/members.ts compiles and its types are internally consistent, and the SQL migration is valid. Single-file AI review says 'looks fine'. Pasting just the stack trace yields a symptom-level patch at the crash site — e.g. 'guard line 24 with member.monthlyQuota?.toLocaleString() ?? \"\\u2014\"'. That silences the throw but never names where the false non-null guarantee is introduced, so it cannot reach Meets. The bug exists only in the relationship across the three files, plus the 'only for workspaces with a legacy member' variant signal — and 'it typechecks / CI is green' is exactly the false reassurance that hides it.",
+        "distinguishing_observable": "Did they navigate PAST the crash site (member.monthlyQuota.toLocaleString() in MemberQuotaTable.tsx) into lib/usage/members.ts and name the `row.monthly_quota as number` cast as the origin — a cast that erases the truthful `number | null` declared on WorkspaceMemberRow and asserts a non-null `number`, which is false for legacy members — and connect it to the SQL migration (0007 adds monthly_quota nullable with no NOT NULL and deliberately leaves legacy/unlimited members NULL) and to the 'crashes only for workspaces containing a null-quota member' tell?",
+        "four_tuple": {
+          "flaw_location": "Cross-file mismatch, not any single broken line: lib/usage/members.ts maps each row with `monthlyQuota: row.monthly_quota as number`, where WorkspaceMemberRow correctly types `monthly_quota: number | null` and the WorkspaceMember view type declares `monthlyQuota: number`. The `as number` cast launders the nullable column into a non-null type the data does not actually have. migration 0007 is the source of truth: it ADDs `monthly_quota integer` with NO NOT NULL constraint and intentionally backfills only metered members, leaving legacy/unlimited members NULL. MemberQuotaTable.tsx then trusts the lie and calls `member.monthlyQuota.toLocaleString()` (and `member.monthlyQuota - member.tokensUsed`) with no null guard. The cast is the origin; the `.toLocaleString()` is only where it surfaces.",
+          "the_tell": "It typechecks clean (tsc --noEmit exits 0, ESLint clean, CI green) yet crashes ONLY for one data variant — workspaces that contain a legacy member whose monthly_quota is NULL — not for the majority. A genuine type/logic error at the crash site would fail for every row and every workspace; a green-CI crash that fires only on certain rows points to a shape that was ASSERTED rather than CHECKED — an `as` cast hiding a nullable column. The server log pairs the failing request with `quota counts: set=5, null=1` while the never-crashing workspace shows `null=0`, tying the crash to the null-quota variant; the 200 / no-server-error confirms the data loaded fine — only the claimed shape is wrong.",
+          "catching_looks_like": "= Meets: locates the actual cross-file cause — the adapter's `row.monthly_quota as number` casts a nullable column (confirmed nullable by migration 0007 and by the WorkspaceMemberRow type's `number | null`) to a non-null type, so legacy members (monthly_quota = NULL) carry a null monthlyQuota that MemberQuotaTable then dereferences — and connects it to the 'only crashes for workspaces with a null-quota / legacy member' variant, not just 'add a null check in the component'.",
+          "correcting_looks_like": "= Above: names the cast as the origin AND explains the mechanism end to end (migration 0007 adds monthly_quota nullable with no NOT NULL and leaves legacy/unlimited members NULL -> the `as number` cast strips `| null` -> WorkspaceMember.monthlyQuota is dishonestly typed non-null so tsc trusts it and CI stays green -> the client reads `.toLocaleString()` / subtracts unguarded -> TypeError, but only when a legacy/null-quota member is in the list), explicitly cites the 'typechecks but crashes for exactly one data variant => a lying `as` cast, not a logic error' tell, and prescribes the honest-seam fix — stop casting: type the result as the nullable row, model `monthlyQuota` as `number | null`, and decide what NULL means at the boundary (e.g. render 'Unlimited' / `?? 0` for arithmetic) — rather than a defensive `?.` slapped only on the crash line."
+        },
+        "rubric_exemplars": {
+          "below": "Never finds it, or stops at the crash site: 'MemberQuotaTable.tsx line 24 calls .toLocaleString() on null, add `member.monthlyQuota?.toLocaleString() ?? \"\\u2014\"`.' Treats it as a missing null check in the component and never connects it to the `as number` cast or the nullable column — patches the symptom, re-breaks the next time a non-null type is asserted.",
+          "meets": "Locates the real cross-file cause: the adapter in lib/usage/members.ts casts `row.monthly_quota as number` even though the column is nullable (WorkspaceMemberRow says `number | null`, migration 0007 adds it without NOT NULL), so legacy members carry a null monthlyQuota that the client dereferences. Identifies the cast over a nullable column as the origin, not just the crash line, and ties it to the 'only crashes for workspaces with a legacy/null-quota member' variant.",
+          "above": "All of Meets PLUS the full failure mechanism and the explicit tell — 'a clean typecheck and green CI but a crash for exactly one data variant means an asserted-not-verified shape (a lying `as` cast), not a logic error at the throw site' — reached via an efficient path (symptom -> lib/usage/members.ts -> migration 0007, with little time wasted re-reading the component), and proposes the honest-seam fix (drop the cast, model monthlyQuota as `number | null`, handle NULL meaningfully at the boundary) rather than a band-aid `?.` at the crash site."
+        }
+      }
+    },
+    {
+      "sequence_index": 3,
+      "routing": {
+        "fit_reason": "Only method that observes a real end-to-end build + clean seams on the full-stack slice; carries the trip's stamina. The seeded profiles.id-vs-auth.uid() conflict is exactly where AI-generated pieces fail to agree.",
+        "ai_floor_hook": "AI emits the migration, policy, fetch fn and page and they compile; the latent actor-id seam (profile_id treated as auth.uid()) ships unless the human verifies isolation actually holds with a second user."
+      },
+      "card": {
+        "method_id": "E1",
+        "skill_class": "Execution",
+        "lever_id": "demo",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "Build a personal Prompt Library, end to end",
+        "instruction": "You're building a small feature inside an AI-native product: a personal Prompt Library where a signed-in user can save the prompts they reuse (a title plus the prompt text) and see them listed back. Build it working, end to end, on the fixed stack — Next.js (App Router) + TypeScript + Supabase/Postgres: a table for saved prompts, a Row-Level Security rule so each user sees ONLY their own prompts, a page that lists the signed-in user's prompts, and a write action (form/server action) that saves a new one. Done means: the viewer sees only their own prompts, another user's prompts never show up, and saving inserts a prompt and it appears in the list. Use your own AI tooling exactly how you normally work (Cursor / Claude / ChatGPT), and screen-record the whole session. We care that it WORKS and that the seam is clean — one consistent way of identifying the owner across the table, the rule, and the query, with the rule enforced in the database, not patched in the page.",
+        "time_cap_seconds": 2700,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Rapid Product Development",
+          "sub_skills": [
+            "Frontend Development",
+            "Backend Fundamentals",
+            "Database Usage",
+            "AI Tooling"
+          ],
+          "domain": "AI Native Product Engineering",
+          "target_band": "1",
+          "target_rung": "r2"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The brief",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Our product is an AI tool, and power users keep re-typing the same prompts. We want to give every user a personal Prompt Library: a place to save a prompt (a short title plus the prompt body) and see their saved prompts listed, newest first. It's a private space — a user only ever sees prompts they saved; they must never see another user's saved prompts. Build this small feature working, end to end, on our stack: Next.js (App Router) + TypeScript on the frontend, Supabase/Postgres on the backend. Auth is already wired up: a signed-in request resolves to a user, and you can get that user's id on the server. You have generous time — this is one feature, one table, one seam — so spend it making the seam actually agree and verifying it, not just generating pieces that compile.",
+            "subtitle": "AI Native Product Engineering · personal Prompt Library · Supabase + Next.js (App Router)",
+            "blocks": [
+              "Stack is fixed: Next.js (App Router) + TypeScript + Supabase (Postgres + Row-Level Security).",
+              "Auth exists. A signed-in request resolves to an authenticated user; on the server you can read that user's id, and Postgres can read it inside policies via auth.uid(). There is also a profiles table (one row per user) if you want user-facing fields.",
+              "Two things must be true at once: (1) it WORKS — the viewer sees only their own saved prompts, another user's prompts never appear, and saving a prompt inserts it and shows it in the list; (2) ownership is enforced in the DATABASE via a Row-Level Security rule, with ONE consistent way of identifying the owner used by the table, the rule, and the query.",
+              "Use your own AI tooling (Cursor / Claude / ChatGPT) exactly how you normally do. Screen-record the entire session, including a moment where you prove a second user cannot see the first user's prompts."
+            ],
+            "highlight": "Use your normal AI tooling. Screen-record the whole build, including the own-prompts-only check."
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "ordered_steps",
+          "title": "What to build",
+          "response_expected": false,
+          "body_json": {
+            "steps": [
+              "STANDARD VARIANT — build from scratch:",
+              "1. Table: create a `prompts` table that stores at least { id, title, body, created_at } plus a column that identifies the owner (the user who saved it). Decide how you identify the owner and use that ONE choice everywhere.",
+              "2. Access rule: enable Row-Level Security on `prompts` and write a policy so a signed-in user can SELECT (and INSERT) only their OWN rows. The rule must be enforced in the database and derived from the authenticated user (auth.uid()), not by a WHERE clause bolted onto the page.",
+              "3. Read path: a Next.js App Router page (server component / route) with ONE data-fetch function that returns the signed-in user's prompts, newest first — relying on the RLS rule for ownership, not re-implementing the filter as the thing that keeps prompts private.",
+              "4. Write path: a form + server action that saves a new prompt for the signed-in user and surfaces it in the list (revalidate / refetch). The save must set the owner correctly and the rule must accept it.",
+              "Working output = the viewer sees ONLY their own prompts, a read while signed in as a different user does not return the first user's prompts, and a save inserts and renders. Above = working AND clean: one consistent owner-id model across table/rule/query, RLS enforced in the DB, no duplicated fetch logic, no app-layer ownership patch standing in for the rule, no copy-paste glue."
+            ],
+            "variant_chunk_match": {
+              "prompt": "CHUNK-MATCH VARIANT — reconcile, don't rebuild from zero. Your AI assistant (or a teammate) already produced four pieces that SHOULD form this Prompt Library feature. Individually each one compiles and looks fine. Wired together they do not behave as one feature — because the pieces do not agree on which id identifies the user who owns a prompt. Your job: make them work as ONE feature with a single consistent owner-id model, ownership enforced in the DB, and prove a second user cannot see the first user's prompts — within the time cap. Reconciling means picking the correct single model and making every layer use it, not papering over the mismatch.",
+              "pieces": [
+                "PIECE 1 — table migration (supabase/migrations/0001_prompts.sql):\ncreate table public.prompts (\n  id uuid primary key default gen_random_uuid(),\n  profile_id uuid not null references public.profiles(id),\n  title text not null,\n  body text not null,\n  created_at timestamptz not null default now()\n);\nalter table public.prompts enable row level security;\n-- owner column references public.profiles(id). NOTE: in this app a profile row's id\n-- is a SEPARATE surrogate key; the link to the auth user is profiles.user_id = auth.uid().",
+                "PIECE 2 — access policy (supabase/migrations/0002_prompts_rls.sql):\ncreate policy prompts_owner_select\n  on public.prompts\n  for select\n  using ( profile_id = auth.uid() );\ncreate policy prompts_owner_insert\n  on public.prompts\n  for insert\n  with check ( profile_id = auth.uid() );\n-- policy compares prompts.profile_id directly against auth.uid()",
+                "PIECE 3 — data fetch + save (lib/prompts.ts):\nimport { createClient } from '@/lib/supabase/server';\nexport async function getMyPrompts() {\n  const supabase = createClient();\n  const { data: { user } } = await supabase.auth.getUser();\n  const { data, error } = await supabase\n    .from('prompts')\n    .select('id, title, body, created_at')\n    .order('created_at', { ascending: false });\n  if (error) throw error;\n  return data;\n}\nexport async function savePrompt(title: string, body: string) {\n  const supabase = createClient();\n  const { data: { user } } = await supabase.auth.getUser();\n  const { error } = await supabase\n    .from('prompts')\n    .insert({ title, body, profile_id: user!.id }); // sets profile_id = auth user id\n  if (error) throw error;\n}\n// fetch relies entirely on RLS for ownership; save writes profile_id = auth.uid()",
+                "PIECE 4 — page + form (app/prompts/page.tsx):\nimport { getMyPrompts, savePrompt } from '@/lib/prompts';\nimport { revalidatePath } from 'next/cache';\nexport default async function PromptsPage() {\n  const prompts = await getMyPrompts();\n  async function add(formData: FormData) {\n    'use server';\n    await savePrompt(String(formData.get('title')), String(formData.get('body')));\n    revalidatePath('/prompts');\n  }\n  return (\n    <main>\n      <form action={add}>\n        <input name=\"title\" placeholder=\"Title\" required />\n        <textarea name=\"body\" placeholder=\"Prompt\" required />\n        <button type=\"submit\">Save</button>\n      </form>\n      <ul>\n        {prompts.map((p) => (\n          <li key={p.id}><strong>{p.title}</strong><pre>{p.body}</pre></li>\n        ))}\n      </ul>\n    </main>\n  );\n}"
+              ],
+              "seeded_conflict": "The owner id is identified inconsistently. The table's owner column is `prompts.profile_id`, which FKs to `public.profiles(id)` — and in this app a profile's `id` is its own surrogate key, NOT the auth user id; the auth user is linked via `profiles.user_id = auth.uid()`. But the RLS policy (Piece 2) compares `profile_id = auth.uid()`, and the save (Piece 3) writes `profile_id = user.id` (the auth uid). So the code treats `profile_id` as if it equals `auth.uid()`, while the table says `profile_id` is `profiles.id` (a different value). Two concrete failures result: (a) the INSERT either violates the FK (no profiles row whose id equals the auth uid) or, if such a row coincidentally exists, the policy's WITH CHECK passes for the wrong reason; and (b) the SELECT policy `profile_id = auth.uid()` and the actual profile-to-user link disagree, so the viewer either sees NOTHING (their real profile_id never equals their auth uid) or, in a seed where ids happen to line up, isolation is being enforced against the wrong key and would break the moment a real profiles.id (surrogate) is used. The happy path can look fine in a quick demo if the seed data conflates the two ids. The candidate must collapse this to ONE consistent owner model — either make the owner column reference the auth user directly (e.g. owner_id uuid references auth.users / equal to auth.uid()) OR resolve auth.uid() -> profiles.id consistently in the table, the policy, AND the save — then verify a second user cannot see the first user's prompts and that the insert actually lands. Simply making the policy and the save 'both say profile_id' without fixing what profile_id MEANS is not a fix."
+            }
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "reflection",
+          "interaction_type": "display",
+          "title": "How we evaluate",
+          "response_expected": false,
+          "body_json": {
+            "guidance": "We care that it WORKS and that the SEAM is clean. Working means: the viewer sees only their own saved prompts, a different signed-in user does not see the first user's prompts, and saving a new prompt inserts it and shows it in the list. Clean means: one consistent way of identifying the owner across the table, the access rule, and the query; ownership enforced in the database via the RLS rule rather than by a WHERE clause in the page standing in for it; no duplicated fetch logic; no copy-paste glue holding mismatched pieces together. AI will happily generate every piece for you — the interesting part is the seam where those pieces are supposed to agree on who owns a row. Show us you verified it: don't just trust that it compiles, prove a second user can't see the first user's prompts.",
+            "links": []
+          }
+        },
+        {
+          "sequence_index": 3,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Walk us through the seam",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Walk us through what you built. Specifically: how do you identify the owner of a prompt, which layer enforces that a user only sees their own prompts and why there, and where exactly did you verify the pieces agree? If you worked from the given pieces, tell us what was wrong at the seam, how you proved a second user cannot read the first user's prompts, and what you changed to make ownership consistent across the table, the rule, and the query.",
+            "placeholder": "e.g. 'Each prompt is owned by owner_id, which equals auth.uid(). The RLS SELECT/INSERT policy enforces owner_id = auth.uid() in the DB; the page fetch does NOT re-filter by user because... I verified isolation by signing in as a second user and...'",
+            "min_words": 60,
+            "max_words": 300
+          }
+        },
+        {
+          "sequence_index": 4,
+          "sub_card_type": "task",
+          "interaction_type": "file_upload",
+          "title": "Upload your screen recording",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Upload the screen recording of your full build session, including the moment you prove a second user cannot see the first user's prompts and the save working end to end (type a prompt, save it, see it appear in the list).",
+            "required": true,
+            "accepted_file_types": [
+              "video/mp4",
+              "video/webm"
+            ],
+            "capture_mode": "screen",
+            "max_duration_seconds": 3600,
+            "allow_microphone": true,
+            "allow_retake": true
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "The candidate's AI emits all four pieces — the prompts table, the RLS policy, the fetch+save module, and the page/form — and they compile and render. In a quick happy-path demo where the seed data conflates the two ids (or where the single test user's profile.id happens to equal their auth uid), the page even lists prompts and the save appears to work. AI will also confidently 'reconcile' the chunk-match pieces by making the policy and the save 'both say profile_id' (or both say auth.uid()) and declare it fixed. What AI does NOT give for free: recognizing that the seam conflict is a SPLIT OWNER-ID MODEL — the owner column references profiles.id (a surrogate) while the policy and save treat it as auth.uid() — deciding the single correct owner model, enforcing it in the DB via RLS, fixing the table/policy/save to all agree on that one model, and actually verifying that a second signed-in user cannot read the first user's prompts (and that the insert actually lands rather than silently failing the FK or check).",
+        "distinguishing_observable": "Does the deliverable actually work at the seam — a second user's read does not return the first user's prompts, the save inserts and renders, the insert is not silently rejected — AND is there ONE consistent owner-id model used by the table, the RLS policy, and the query/save, with ownership enforced by RLS in the DB, no app-layer WHERE clause standing in for the rule, no duplicated fetch logic, no copy-paste glue reconciling the id mismatch?",
+        "working_output_definition": "On the personal Prompt Library feature: (1) a signed-in user lists ONLY their own saved prompts, newest first; (2) signed in as a SECOND user with their own seeded prompts, the first user's prompts do NOT appear (own-rows-only isolation holds); (3) the save server action inserts a new prompt owned by the signed-in user — the insert is accepted (no FK / WITH CHECK rejection) and the new row appears in that user's list on refresh/revalidate; (4) ownership is enforced by an RLS policy in the database (SELECT + INSERT WITH CHECK), and the same single owner-id model is used by the table column, the policy, and the fetch/save; (5) both the standard build and the reconciled chunk-match build satisfy 1-4.",
+        "harness_checks": [
+          "isolation_select_test: seed prompts for user A and user B; query the prompts page / fetch as user A's authenticated session -> returns ONLY A's prompts; count of B's prompts visible to A == 0.",
+          "rls_is_the_enforcer_test: query the prompts table directly under user A's JWT with no app-layer owner filter -> B's rows are still NOT returned, proving ownership is enforced by RLS in the DB rather than by a WHERE clause in the page.",
+          "insert_accepted_test: the save server action as user A inserts a row whose owner resolves to A; the insert is NOT rejected by a foreign-key violation or by the RLS WITH CHECK, and the new row is then returned by A's list query.",
+          "insert_isolation_test: an attempted insert that would set the owner to someone other than the signed-in user is rejected by the RLS WITH CHECK policy.",
+          "single_model_test: the table's owner column, the SELECT policy, the INSERT WITH CHECK policy, and the save all key ownership off the SAME identifier (one consistent owner model that resolves to auth.uid()); no surviving mismatch where the column means profiles.id while the policy/save mean auth.uid(). (Static check on migration + lib + policy.)",
+          "render_both_variants_test: the /prompts page renders the signed-in user's prompts and the save form for both the standard build and the reconciled chunk-match build without runtime error."
+        ],
+        "rubric_exemplars": {
+          "below": "Doesn't work or isn't clean at the seam: ships the chunk-match pieces as-is so the owner column means profiles.id while the policy/save compare against auth.uid() — the list is empty, or the insert fails the FK / WITH CHECK, or isolation is enforced against the wrong key; OR 'reconciles' by making the policy and save both literally say profile_id without fixing what profile_id MEANS (so ownership is still keyed off the wrong/inconsistent id); OR the save doesn't insert; OR a second user can see the first user's prompts; OR the feature is incomplete / not completed in the cap.",
+          "meets": "Working, complete deliverable meeting the working-output definition: the viewer sees only their own prompts, a second user does not see them, the save inserts and renders, list and write both function, ownership enforced by RLS in the DB on one consistent owner id. It works, but the model may still be partly redundant (e.g. RLS by owner_id AND a belt-and-suspenders owner filter in the fetch) or there's minor duplicated fetch logic — correct but not fully clean.",
+          "above": "Working AND clean: ONE consistent owner-id model across the table, the RLS policy, and the query/save (the owner resolves to auth.uid() the same way everywhere — either the column is the auth user id directly, or auth.uid()->profiles.id is resolved consistently in column, policy, and save); ownership enforced in the database by RLS (SELECT + INSERT WITH CHECK), NOT by a WHERE clause in the page standing in for the rule; the id mismatch is fixed at the root rather than 'matched'; no duplicated fetch logic, no copy-paste glue; and the candidate verifies it actually holds at the seam (signs in as a second user and shows the first user's prompts do not appear, and the insert lands). Names the AI-Usage-vs-Understanding and Shipping-vs-Perfection tradeoff explicitly.",
+          "_tension_framing": "AI Usage vs Understanding: AI gives you four pieces that compile and a demo that can look fine, but understanding is seeing that profile_id (a surrogate) is being treated as auth.uid(), choosing one owner model, and proving own-rows-only isolation actually holds. Shipping vs Perfection: shipping the compiling pieces 'finishes' fast but ships an empty list, a failing insert, or isolation keyed off the wrong id; the small extra step of collapsing to one DB-enforced owner model and verifying it is what makes it actually work AND stay clean."
+        }
+      }
+    }
+  ]
+}

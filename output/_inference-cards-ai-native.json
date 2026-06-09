@@ -1,0 +1,132 @@
+{
+  "ideal_candidate": {
+    "content": "A highly ambitious fresher who has built real products, participated in hackathons, experimented with AI tools, and demonstrates strong learning velocity. They may not know everything but consistently figure things out and ship.",
+    "confidence": "verified",
+    "provenance": "Founding-fresher hiring philosophy."
+  },
+  "location_comp": {
+    "content": "Bangalore preferred. Suitable for final-year students, recent graduates, or candidates with less than 2 years of experience. Compensation should balance learning opportunity, ownership, and startup upside.",
+    "confidence": "inferred",
+    "provenance": "Role designed for fresh graduates."
+  },
+  "teachable_vs_innate": {
+    "already_exist": [
+      "Curiosity",
+      "Ownership mindset",
+      "Strong problem solving",
+      "Builder mentality",
+      "Communication skills",
+      "Ability to learn independently",
+      "Persistence"
+    ],
+    "can_be_taught": [
+      "Next.js best practices",
+      "Supabase architecture",
+      "Production deployment",
+      "System design",
+      "Agent workflows",
+      "Infrastructure",
+      "Scaling applications"
+    ],
+    "provenance": "Focus on aptitude over existing technical depth."
+  },
+  "must_haves_red_flags": {
+    "must_haves": [
+      "Built at least one end-to-end project",
+      "Comfortable with JavaScript or TypeScript",
+      "Experience using AI coding tools",
+      "GitHub profile with visible work",
+      "Ability to learn independently",
+      "Strong written communication"
+    ],
+    "red_flags": [
+      "Only tutorial projects",
+      "No evidence of building outside coursework",
+      "Uses AI but cannot explain generated code",
+      "Waiting for detailed instructions before taking action",
+      "No curiosity about users or products"
+    ],
+    "provenance": "Freshers evaluated on potential and initiative."
+  },
+  "search_playbook": {
+    "content": "Source from hackathons, engineering colleges, open-source communities, startup clubs, AI builder communities, and student founders. Prioritize builders over academic achievers.",
+    "target_companies": [
+      "Hackathon communities",
+      "Open source contributors",
+      "Student startup founders",
+      "Builder communities",
+      "Developer Discord groups",
+      "Engineering colleges"
+    ],
+    "avoid_companies_or_pools": [
+      "Resume-driven applicants with no projects",
+      "Candidates focused only on certifications",
+      "Tutorial-only portfolios"
+    ],
+    "provenance": "Designed for identifying high-agency freshers."
+  },
+  "skill_table": {
+    "core": [
+      "Product Building",
+      "Full Stack Development",
+      "AI Assisted Development"
+    ],
+    "micro": [
+      "TypeScript",
+      "JavaScript",
+      "React",
+      "Next.js",
+      "Supabase",
+      "Git",
+      "Prompt Engineering",
+      "Cursor",
+      "Claude",
+      "ChatGPT",
+      "API Integration",
+      "Problem Solving"
+    ],
+    "domain": "AI Native Product Engineering",
+    "primary_skill": "Rapid Product Development",
+    "sub_skills": [
+      "Frontend Development",
+      "Backend Fundamentals",
+      "Database Usage",
+      "Debugging",
+      "Product Thinking",
+      "User Empathy",
+      "AI Tooling"
+    ],
+    "target_band": "1",
+    "target_rung": "beginner",
+    "provenance": "Fresh graduate profile."
+  },
+  "tension_cards": [
+    {
+      "title": "Potential vs Experience",
+      "body": "We're betting on learning velocity and ambition rather than years of industry experience.",
+      "tradeoffs": [
+        "Raw talent",
+        "Immediate productivity",
+        "Long-term upside"
+      ]
+    },
+    {
+      "title": "Shipping vs Perfection",
+      "body": "We prefer candidates who build and learn from real users instead of endlessly polishing projects.",
+      "tradeoffs": [
+        "Execution speed",
+        "Polish",
+        "Learning rate"
+      ]
+    },
+    {
+      "title": "AI Usage vs Understanding",
+      "body": "AI should accelerate your work, not replace your thinking.",
+      "tradeoffs": [
+        "Speed",
+        "Code comprehension",
+        "Technical growth"
+      ]
+    }
+  ]
+}

@@ -3,9 +3,9 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { StoryTrip } from "./types";
 
-// Single-story trips live alongside the legacy trips in trip-gen-engine/output/*.json,
+// Single-story trips live alongside the legacy trips in preview/output/*.json,
 // distinguished by schema_version === "story.v1".
-const OUTPUT_DIR = path.join(process.cwd(), "..", "output");
+const OUTPUT_DIR = path.join(process.cwd(), "output");
 
 function isStory(v: unknown): v is StoryTrip {
   return !!v && typeof v === "object" && (v as { schema_version?: string }).schema_version === "story.v1";

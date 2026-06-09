@@ -1,0 +1,605 @@
+{
+  "trip_plan": {
+    "domain": "AI Product Engineering",
+    "role": "Product-minded full-stack engineer (Next.js/TS/Supabase, AI-assisted)",
+    "target_band": "3",
+    "default_rung": "intermediate",
+    "total_time_cap_seconds": 5400,
+    "classes_covered": [
+      "Judgement",
+      "Cognition",
+      "Execution"
+    ],
+    "card_sequence": [
+      "J1",
+      "J4",
+      "C3",
+      "J6",
+      "E1"
+    ],
+    "stamina_note": "Closing E1 demo (2700s, full-stack table+RLS+page+write seam) is the sustained build that makes stamina observable; the mid C3 (1500s) read-mode trace adds a second block of heavy sustained focus, so endurance shows across two long cards.",
+    "coverage_gaps": "Tested 6 of 8 must-haves directly. 'Git proficiency' observed incidentally in the E1 recording, not a dedicated card. The 'Generalist vs Specialist' tension dropped as a standalone Judgement card to stay inside the ~90-min budget; exercised implicitly by the E1 full-stack seam.",
+    "generated_from": "InferenceCards (JD-derived) -> trip-orchestrator.md -> method-generators.md (J1/J4/C3/J6/E1)"
+  },
+  "cards": [
+    {
+      "sequence_index": 0,
+      "routing": {
+        "fit_reason": "J1 Voice is the only method that tests probing for the hidden constraint before building; at band 3 the omission is a confidentiality/visibility boundary a senior must surface unprompted, where J4/J6 would pre-supply the options and rob the signal.",
+        "ai_floor_hook": "AI instantly emits a generic users/artifacts schema + CRUD plan; it won't surface the sharing/visibility-at-row-level constraint unprompted or rank which missing fact reshapes the whole model."
+      },
+      "card": {
+        "method_id": "J1",
+        "skill_class": "Judgement",
+        "lever_id": "voice",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "Data layer for saving & sharing AI artifacts — frame it before you build",
+        "instruction": "A founder just handed you a one-line brief (read it on the left). Before you propose any schema, tables, or code: restate the problem in your own words so we know you understood it, then ask whatever you need to ask before you'd commit to a data model. Talk it through out loud — this is a conversation, not a design doc. We care more about which questions you ask and the order you ask them in than about how fast you can name tables.",
+        "time_cap_seconds": 540,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Full Stack Product Development",
+          "sub_skills": [
+            "Rapid Prototyping",
+            "Database Design",
+            "System Design"
+          ],
+          "domain": "AI Product Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The brief",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "\"We're building an AI tool that generates artifacts for users — call them generations. I want you to set up the data layer so users can save their generations and share them. Walk me through how you'd model it.\"",
+            "subtitle": "AI Product Engineering startup. Stack is fixed: Next.js (App Router), TypeScript, Supabase, Postgres/SQL. The founder is non-technical and wants to ship a usable v1 this sprint.",
+            "blocks": [
+              "Context the founder volunteered: users sign in, hit generate, and get an artifact back. They want a 'My Generations' view and some notion of sharing.",
+              "The founder considers this a small, well-understood task and expects a schema + a plan. They will answer questions if you ask them, but they will not volunteer constraints you don't probe for."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "voice_exchange",
+          "title": "Restate, then probe",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Restate the problem in your own words, then ask whatever you need before you'd commit to a data model. Lead with the questions that would most change the schema. If something in the brief is doing a lot of silent work, name it.",
+            "turn_mode": "multi_turn",
+            "max_turns": 4,
+            "expected_signal": "Tight restatement that flags the ambiguity, then impact-ranked probing questions — the #1 question pins down per-viewer/row-level visibility and what 'shared' concretely means before any tables are proposed.",
+            "_hidden_omissions": [
+              {
+                "rank": 1,
+                "fact": "The brief never defines the visibility / multi-tenant boundary: who can see whose generations by default (own-rows-only? org/team scoped? public?), and what 'shared' means at the ROW level — share with a specific user, a link, a workspace, or fully public; and is a shared artifact read-only or editable. This is the access-control rule the whole model hinges on.",
+                "why_it_changes_the_approach": "It determines whether you need a single owner_id with RLS = own-rows-only, a shares/permissions join table (artifact_id x grantee x role), a tenancy column (org_id) on every row, or a public_token/visibility enum. You cannot pick the schema, the RLS policies, or the query shape until this is settled — get it wrong and either users leak each other's private generations or 'sharing' is impossible to add without a migration. Everything else (timestamps, content storage) is mechanical once this is fixed."
+              },
+              {
+                "rank": 2,
+                "fact": "What IS a 'generation/artifact' as stored data — a row of text/JSON, a large blob/file (image, doc) that belongs in Supabase Storage with a DB pointer, or a prompt+output pair? And is it immutable once created or re-generable/versioned?",
+                "why_it_changes_the_approach": "Decides inline column vs jsonb vs Storage bucket + signed URLs (which interacts with the visibility rule — public sharing of a Storage object needs its own policy), and whether you need a versions table."
+              },
+              {
+                "rank": 3,
+                "fact": "Scale and lifecycle expectations: rough volume per user, retention (do generations expire / get soft-deleted), and whether shares can be revoked.",
+                "why_it_changes_the_approach": "Drives indexing on (owner_id, created_at), soft-delete columns, and whether revocation needs to be a state on the shares table vs a hard delete — affects the permissions model directly."
+              },
+              {
+                "rank": 4,
+                "fact": "Is enforcement expected at the database layer (RLS) or is the founder assuming app-code checks in the Next.js route handlers?",
+                "why_it_changes_the_approach": "On Supabase the correct answer is RLS so the rule can't be bypassed by a forgotten where-clause, but if the team is reading directly with the service role it changes where the boundary lives. A senior names this rather than assuming."
+              },
+              {
+                "rank": 5,
+                "fact": "Auth/identity model: are these Supabase auth.users, and is there any team/org concept now or expected soon?",
+                "why_it_changes_the_approach": "Determines FK to auth.users(id) vs a profiles table and whether org_id needs to exist on day one to avoid a painful re-tenanting migration later."
+              }
+            ]
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasting this brief into an AI assistant returns a generic, confident answer instantly: a users table and a generations/artifacts table (id, user_id, content, created_at), basic CRUD, and a hand-wave at sharing ('add an is_public flag' or 'a shares table'). It will NOT, unprompted, stop and insist that 'shared' is undefined at the row level, nor will it rank per-viewer visibility as THE decision that reshapes the entire schema and RLS posture before anything is built. That generic schema-plus-CRUD answer is the Below floor.",
+        "distinguishing_observable": "Did they surface the per-tenant / row-level visibility + 'what does shared actually mean' constraint UNPROMPTED, and treat it as the highest-leverage unknown — ordering their questions by what most reshapes the data model (visibility/sharing semantics first) rather than by volume of clarifications?",
+        "rubric_exemplars": {
+          "below": "\"Okay, so you want users to save and share their AI generations. I'd make a users table and a generations table with a user_id foreign key, content stored as jsonb, and created_at. For sharing I'll add an is_public boolean and we can flip it on. Want me to write the CRUD and the migration?\" — accepts the brief at face value, never questions what 'shared' means or who-sees-whose, jumps to a schema; this is exactly what the AI emits.",
+          "meets": "\"Let me restate: a data layer where each user owns their generations and can also share them. The obvious gap is sharing — does 'shared' mean a public link, or shared with specific people? I'd want to know that before I model it, because it's the difference between a flag and a join table. I'd also confirm whether generations are big files or just text/JSON. I'm assuming Supabase auth and RLS so users only see their own by default.\" — accurate restatement, names sharing as genuinely ambiguous and asks at least one decision-relevant question, but treats it as one question among several rather than the thing the whole model hinges on.",
+          "above": "\"Quick restate so we're aligned: you want users to persist their AI artifacts and selectively share them — and the word doing all the silent work here is 'share,' because it secretly defines the entire access model. Before I touch a schema, the one thing I have to pin down: what's the default visibility — can a user only ever see their own generations, or is there a team/org where teammates see each other's? And when something is 'shared,' is that share-with-a-specific-user, share-by-link, or fully public — and is the shared copy read-only or editable? That single answer decides whether this is one owner_id column with own-rows-only RLS, a shares join table keyed on (artifact_id, grantee_id, role), or a public_token with its own policy — and on Supabase I want this enforced in RLS at the DB, not as a where-clause in a route handler someone forgets. Everything after that — is an artifact inline JSON or a Storage blob with a pointer, do we need versioning, revocation, an org_id now to avoid a re-tenanting migration later — is downstream of it. So my ordered questions are: (1) default visibility and the exact meaning of 'shared,' (2) what an artifact physically is, (3) revocation and retention.\" — restates AND explicitly names the unstated visibility/'shared'-semantics assumption as the pivot of the whole model, ties each candidate schema to the answer, places enforcement at the DB layer, and orders questions highest-leverage first."
+        }
+      }
+    },
+    {
+      "sequence_index": 1,
+      "routing": {
+        "fit_reason": "J4 forces commitment on a genuinely contested confidentiality fork; the background-worker constraint makes unbypassable DB-layer (RLS) the constraint-forced answer, which a balanced AI 'both have merits' answer cannot reach — and J1/J6 don't test a single decisive fork.",
+        "ai_floor_hook": "AI argues both RLS and app-layer fluently and often defaults to the simpler app-layer guard; it won't recognize that the bypassing AI worker invalidates app-layer enforcement and name the switch condition."
+      },
+      "card": {
+        "method_id": "J4",
+        "skill_class": "Judgement",
+        "lever_id": "quiz",
+        "grading_mode": "Banded",
+        "review": "Auto",
+        "title": "Per-tenant access to AI generation history: where does the rule live?",
+        "instruction": "You run an AI product where each tenant's users can browse the history of their own AI generations (prompts, outputs, embeddings). Two ways to enforce 'a tenant only ever sees its own generation rows' are on the table — and one detail about how that data gets read decides between them. Read the brief, commit to the option you'd ship, then defend it: why this one under the stated constraint, and the exact condition under which you'd switch.",
+        "time_cap_seconds": 360,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Database Design",
+          "sub_skills": [
+            "Backend Development",
+            "AI Integration",
+            "System Design"
+          ],
+          "domain": "AI Product Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The situation",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Multi-tenant AI product on Next.js (App Router) + Supabase/Postgres. Table `ai_generations` holds every tenant's generation history: prompt text, model output, token usage, and a pgvector `embedding` column. Each row has `tenant_id`. The product requirement is hard: a tenant must NEVER be able to read another tenant's generation rows — this is contractual confidentiality, not a UX nicety.\n\nTwo engineers propose different enforcement:\n\nOption A — Enforce in Postgres with Row-Level Security. Turn RLS ON for `ai_generations`, write a policy `USING (tenant_id = current_tenant())` driven by a session GUC/JWT claim, and let every read path inherit it automatically.\n\nOption B — Enforce in the app layer. Keep RLS OFF; in each Next.js route handler / server action, read the logged-in user's tenant from the session and append `.eq('tenant_id', session.tenant_id)` (a WHERE clause) to every query. Simpler, all in TypeScript, no policy DSL to maintain, easy to evolve as filtering rules change.\n\nOption C — Do both: RLS ON in Postgres AND the app-layer tenant filter as defense-in-depth.\n\nDECIDING DETAIL: the SAME `ai_generations` rows are also read and written by a background AI worker — an async job that (re)generates outputs and backfills embeddings. That worker runs on a queue OUTSIDE any HTTP request: there is no logged-in user and no session when it touches these rows.",
+            "subtitle": "AI Product Engineering · multi-tenant generation history · Next.js + Supabase/Postgres",
+            "rules": [],
+            "start_label": "Start"
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "choice_buttons",
+          "title": "Pick the option you'd ship",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Pick the option you'd ship.",
+            "options": [
+              {
+                "id": "a",
+                "label": "Option A — RLS policy in Postgres (tenant_id = current_tenant()), enforced at the DB for every read path",
+                "value": "a"
+              },
+              {
+                "id": "b",
+                "label": "Option B — App-layer tenant guard in the Next.js route/server action (RLS off), append .eq('tenant_id', ...) per query",
+                "value": "b"
+              },
+              {
+                "id": "c",
+                "label": "Option C — Both: RLS on AND the app-layer filter as defense-in-depth",
+                "value": "c"
+              }
+            ],
+            "selection_mode": "single",
+            "correct_answer": "a"
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Defend your pick",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Defend your pick in a few sentences: why this option under the stated confidentiality constraint, what tradeoff you're accepting, and the exact condition under which you'd switch to the other approach.",
+            "placeholder": "I'd ship ___ because the background worker means ___. The tradeoff I'm accepting is ___. I'd switch to ___ only if ___.",
+            "max_words": 150
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Pasted into an assistant, the brief yields a fluent both-sides essay and frequently a default toward Option B ('simpler, all in TypeScript, fewer moving parts, app-layer is more flexible') — the common-in-training instinct that 'simpler is better' and that you can lean on the request session for tenant scoping. The AI will also happily endorse Option C without explaining why the worker forces the DB layer. None of this, unprompted, identifies that the request-context filter is the thing being invalidated. That is the Below floor.",
+        "distinguishing_observable": "Did they pick the DB-enforced option (A or C) BECAUSE the background worker runs outside the request/session, so an app-layer guard keyed to the logged-in user cannot protect that write/read path — AND name the switch condition (when app-only would actually be safe)?",
+        "stronger_option": {
+          "id": "a",
+          "why": "Confidentiality is contractual and the SAME rows are touched by an async worker that has no logged-in user and no session. An app-layer guard keyed to session.tenant_id only runs on the HTTP request path; it is structurally absent from the worker path, so it cannot be the enforcement boundary for confidentiality. Pushing the rule into Postgres RLS makes it unbypassable: it holds for the request path, the worker path, a future cron, or a manual psql session. Option C (both) is also acceptable as the stronger family — RLS is load-bearing and the app filter is redundant defense-in-depth — but the worker must run with a role/claim that satisfies RLS (e.g. service_role or an explicit per-tenant GUC it sets per job), NOT one that silently bypasses it."
+        },
+        "tradeoff_axis": "unbypassable-DB-enforcement (RLS holds on every path including the session-less worker) vs app-code-simplicity/flexibility (one TypeScript layer, no policy DSL, easy to evolve — but only covers the request path).",
+        "rubric_exemplars": {
+          "below": "Picks Option B for a surface reason and misses the constraint: 'I'd ship the app-layer guard — it's simpler, it's all in TypeScript, and we read the tenant from the session in every route.' (Confidently wrong: the session-less worker has no session to read, so this guard never runs on that path.) Also Below: cannot commit ('both have merits, depends'), or picks C only because 'more layers = safer' without naming what the app layer fails to cover.",
+          "meets": "Picks A (or C) and gives a valid DB-enforcement reason: 'I'd put it in RLS. Confidentiality this strict should be enforced at the database so every query inherits it automatically and a forgotten WHERE clause can't leak another tenant's generations.' Correct option and a sound DB-layer rationale, but does not explicitly tie it to the background worker invalidating the request-scoped guard, and gives no precise switch condition.",
+          "above": "Picks A (or C with the worker-identity caveat) and pins the deciding mechanism plus the switch: 'The decider is the async worker — it runs on a queue with no HTTP request and no logged-in user, so Option B's .eq(tenant_id, session.tenant_id) literally can't run there; the worker would read/write rows with no tenant scoping. Putting USING (tenant_id = current_tenant()) in the DB makes isolation unbypassable across the request path, the worker, future crons, and any direct connection — the worker just sets its per-tenant claim/GUC per job rather than bypassing it. The tradeoff I accept is the RLS policy DSL and being careful the worker's role doesn't silently bypass policies. I'd drop to app-layer-only ONLY if no out-of-request actor ever touches this table — which the background generation/embedding worker makes false here.'"
+        }
+      }
+    },
+    {
+      "sequence_index": 2,
+      "source_policy": "bank-only — author-reviewed; not for live generation into production",
+      "routing": {
+        "fit_reason": "C3 on NEXT.JS+TS is the sharpest 'distrust the green checkmark' test: the bug lives in the cross-file relationship (cast claims a shape -> consumer trusts it) and is invisible in any single file AI reviews; at band 3 the tell requires connecting the variant-specific crash to the originating cast across the server/client boundary.",
+        "ai_floor_hook": "Pasting any one file into AI returns 'looks correct' because each file is locally valid; the lying cast only fails across files for one data variant."
+      },
+      "card": {
+        "method_id": "C3",
+        "skill_class": "Cognition",
+        "lever_id": "live_ide",
+        "grading_mode": "Trap",
+        "review": "Auto",
+        "title": "Generation Results page crashes — but only for some runs",
+        "instruction": "Our AI-generation results page (Next.js App Router, TypeScript, Supabase) typechecks cleanly, the editor shows no red squiggles, and it renders fine for almost every saved generation. But for a subset of runs it crashes at runtime with a TypeError. Three relevant files are open below in read-only mode: the page's client list component, the shared type definitions, and the server-side data adapter that loads rows from Supabase. Read the code and the error evidence, find the ACTUAL cause (not the line that throws), and explain the failure mechanism and the tell that points away from the crash site. You do not have an AI assistant for this card.",
+        "time_cap_seconds": 1500,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "AI-Assisted Software Development",
+          "sub_skills": [
+            "Frontend Development",
+            "Performance Optimization",
+            "Frontend Architecture"
+          ],
+          "domain": "AI Product Engineering",
+          "target_band": "3",
+          "target_rung": "r3"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The symptom",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "The /generations history page lists every AI generation a user has run. It works for most rows. But for runs that were saved while still streaming (the user navigated away, or the model run was cancelled mid-stream), opening the page throws a client-side TypeError and the whole list unmounts to the error boundary. `tsc --noEmit` is clean. The editor shows zero errors. The same page renders perfectly for completed runs.",
+            "subtitle": "Surfaces in the client list component, but only for streamed/partial generation rows.",
+            "blocks": [
+              "Browser console (production build, one affected user):",
+              "Uncaught TypeError: Cannot read properties of null (reading 'totalTokens')",
+              "    at GenerationResultsList (generation-results-list.tsx:34)",
+              "    at renderWithHooks (react-dom.production.min.js)",
+              "Sentry breadcrumb: route=/generations  user has 9 completed runs + 1 'partial' run",
+              "Server log (the RSC fetch that fed this page) — NO error, 200 OK:",
+              "[adapter] loaded 10 generation rows for user a1f0... (status counts: completed=9, partial=1)",
+              "Note: tsc --noEmit exits 0. ESLint clean. The crash reproduces ONLY when the result set contains at least one row with status='partial' (or 'streaming')."
+            ]
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "code_editor",
+          "title": "Read-only: the three relevant files",
+          "response_expected": false,
+          "body_json": {
+            "mode": "read_only",
+            "files": [
+              {
+                "path": "app/(dashboard)/generations/_components/generation-results-list.tsx",
+                "language": "typescript",
+                "content": "'use client';\n\nimport { useMemo } from 'react';\nimport type { Generation } from '@/lib/generations/types';\nimport { formatRelative } from '@/lib/format';\n\ntype Props = {\n  generations: Generation[];\n};\n\n/**\n * Renders the user's generation history. Pure presentational client component:\n * it receives already-adapted Generation objects from the server component\n * `app/(dashboard)/generations/page.tsx` and maps over them. No fetching here.\n */\nexport function GenerationResultsList({ generations }: Props) {\n  // Sort newest-first. Cheap, memoised so re-renders on selection don't re-sort.\n  const sorted = useMemo(\n    () => [...generations].sort((a, b) => b.createdAt - a.createdAt),\n    [generations],\n  );\n\n  if (sorted.length === 0) {\n    return <p className=\"text-muted\">No generations yet.</p>;\n  }\n\n  return (\n    <ul className=\"divide-y divide-border\">\n      {sorted.map((gen) => {\n        // `output` is typed non-null on Generation, so the usage analytics below\n        // is just a field read — no guard needed, and tsc agrees.\n        const usagePct = Math.round(\n          (gen.output.usage.totalTokens / gen.model.contextWindow) * 100,\n        ); // line 34\n\n        return (\n          <li key={gen.id} className=\"flex items-center justify-between py-3\">\n            <div className=\"min-w-0\">\n              <p className=\"truncate font-medium\">{gen.prompt}</p>\n              <p className=\"text-xs text-muted\">\n                {gen.model.label} · {formatRelative(gen.createdAt)}\n              </p>\n            </div>\n            <div className=\"flex items-center gap-3\">\n              <span className=\"text-xs tabular-nums text-muted\">\n                {gen.output.usage.totalTokens.toLocaleString()} tok\n              </span>\n              <div className=\"h-1.5 w-24 overflow-hidden rounded bg-muted/30\">\n                <div\n                  className=\"h-full bg-primary\"\n                  style={{ width: `${Math.min(usagePct, 100)}%` }}\n                />\n              </div>\n              <StatusPill status={gen.status} />\n            </div>\n          </li>\n        );\n      })}\n    </ul>\n  );\n}\n\nfunction StatusPill({ status }: { status: Generation['status'] }) {\n  const tone =\n    status === 'completed'\n      ? 'bg-green-100 text-green-800'\n      : status === 'failed'\n        ? 'bg-red-100 text-red-800'\n        : 'bg-amber-100 text-amber-800'; // partial / streaming\n  return (\n    <span className={`rounded px-2 py-0.5 text-xs font-medium ${tone}`}>\n      {status}\n    </span>\n  );\n}\n"
+              },
+              {
+                "path": "lib/generations/types.ts",
+                "language": "typescript",
+                "content": "/**\n * Domain types for the AI-generation history feature.\n *\n * A `Generation` is the adapted, view-ready shape consumed by the\n * `/generations` page and its client components. The raw persisted shape lives\n * in `GenerationRow` (see ./adapter.ts) and is mapped into this.\n */\n\nexport type GenerationStatus = 'streaming' | 'partial' | 'completed' | 'failed';\n\nexport type ModelInfo = {\n  id: string;\n  label: string;\n  contextWindow: number;\n};\n\nexport type GenerationUsage = {\n  promptTokens: number;\n  completionTokens: number;\n  totalTokens: number;\n};\n\n/**\n * The model output for a generation.\n *\n * NOTE: `output` is only fully populated once a run reaches a terminal state.\n * For `streaming` / `partial` runs the persisted row may not have usage yet —\n * but the view layer treats Generation.output as always present (see adapter).\n */\nexport type GenerationOutput = {\n  text: string;\n  usage: GenerationUsage;\n};\n\nexport type Generation = {\n  id: string;\n  userId: string;\n  prompt: string;\n  status: GenerationStatus;\n  model: ModelInfo;\n  /** Non-null by contract: the adapter guarantees a populated output. */\n  output: GenerationOutput;\n  createdAt: number;\n};\n"
+              },
+              {
+                "path": "lib/generations/adapter.ts",
+                "language": "typescript",
+                "content": "import 'server-only';\nimport { createServerClient } from '@/lib/supabase/server';\nimport type { Generation, GenerationOutput, ModelInfo } from './types';\nimport { MODELS } from './models';\n\n/**\n * The raw row shape as stored in Supabase (table: public.generations).\n * `output_json` is a jsonb column populated by the streaming writer as the\n * model produces tokens; it is written as NULL at row-insert time and only\n * filled in once the run finalises. `model_id` FKs into public.models.\n */\ntype GenerationRow = {\n  id: string;\n  user_id: string;\n  prompt: string;\n  status: 'streaming' | 'partial' | 'completed' | 'failed';\n  model_id: string;\n  // jsonb: { text: string; usage: { promptTokens; completionTokens; totalTokens } } | null\n  output_json: GenerationOutput | null;\n  created_at: string;\n};\n\nfunction resolveModel(modelId: string): ModelInfo {\n  return MODELS[modelId] ?? { id: modelId, label: modelId, contextWindow: 0 };\n}\n\n/**\n * Loads a user's generation history and adapts each persisted row into the\n * view-ready `Generation` shape consumed by the /generations page.\n */\nexport async function getGenerationsForUser(\n  userId: string,\n): Promise<Generation[]> {\n  const supabase = createServerClient();\n\n  const { data, error } = await supabase\n    .from('generations')\n    .select('id, user_id, prompt, status, model_id, output_json, created_at')\n    .eq('user_id', userId)\n    .order('created_at', { ascending: false });\n\n  if (error) throw new Error(`failed to load generations: ${error.message}`);\n\n  const rows = (data ?? []) as GenerationRow[];\n\n  console.log(\n    `[adapter] loaded ${rows.length} generation rows for user ${userId} ` +\n      `(status counts: ${summariseStatus(rows)})`,\n  );\n\n  return rows.map((row) => ({\n    id: row.id,\n    userId: row.user_id,\n    prompt: row.prompt,\n    status: row.status,\n    model: resolveModel(row.model_id),\n    // output_json is typed `GenerationOutput | null`, but we hand it to the\n    // view as the non-null `GenerationOutput` the Generation type promises.\n    output: row.output_json as GenerationOutput,\n    createdAt: Date.parse(row.created_at),\n  }));\n}\n\nfunction summariseStatus(rows: GenerationRow[]): string {\n  const counts: Record<string, number> = {};\n  for (const r of rows) counts[r.status] = (counts[r.status] ?? 0) + 1;\n  return Object.entries(counts)\n    .map(([k, v]) => `${k}=${v}`)\n    .join(', ');\n}\n"
+              }
+            ],
+            "capture": [
+              "grep_targets",
+              "files_opened",
+              "navigation_path",
+              "time_to_cause"
+            ]
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Diagnose the cause",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "What is the ACTUAL cause of the crash, and what was the tell that told you the crash site wasn't where the bug lives? Name the precise cross-file mismatch, explain why it typechecks yet crashes only for partial/streamed runs, and say how you'd fix it.",
+            "placeholder": "Cause (be specific about which file and which line introduces the lie), the tell, the failure mechanism, and the fix...",
+            "max_words": 200
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "Single-file AI review says 'looks correct' for every file in isolation — the client component is a clean typed map, the type file is internally consistent, and the adapter compiles. Pasting any one file (or even the stack trace) into an AI yields a symptom-level fix at the crash site, e.g. 'add `gen.output?.usage?.totalTokens ?? 0` in line 34'. That patches the throw but never names where the non-null lie is introduced, so it cannot reach Meets. The bug only exists in the relationship across the three files plus the 'only for partial rows' variant signal.",
+        "distinguishing_observable": "Did they navigate past the crash site (the .map in generation-results-list.tsx) and the type file, into lib/generations/adapter.ts, and name the `row.output_json as GenerationOutput` cast as the origin — a cast that erases the truthful `GenerationOutput | null` and asserts non-null, which is false for partial/streaming rows whose `output_json` jsonb is still NULL — connecting that to the 'crashes only when a partial row is present' tell?",
+        "four_tuple": {
+          "flaw_location": "Cross-file mismatch between lib/generations/adapter.ts and lib/generations/types.ts, surfacing in generation-results-list.tsx. The adapter selects `output_json` (correctly typed `GenerationOutput | null` on GenerationRow) and assigns it to `Generation.output` via `row.output_json as GenerationOutput` — a lying `as` cast that drops the `| null`. The `Generation` type then advertises `output: GenerationOutput` (non-null) to the whole view layer. For completed rows output_json is populated so the lie is harmless; for partial/streaming rows output_json is NULL in the database, so `gen.output` is null at runtime and `gen.output.usage.totalTokens` throws two files away. The defect is not at line 34 and not in the type declaration — it is the unverified assertion in the adapter that makes both look correct.",
+          "the_tell": "It typechecks (tsc clean, no editor red) AND crashes ONLY for one data variant — the partial/streaming rows — not the majority. That signature points away from a logic error at the crash site (which would fail for all rows) and toward an asserted-but-unverified shape: a value the type system was told is non-null but that is actually null for one variant. The server log showing a clean 200 with `partial=1` pairs the variant with the failing render.",
+          "catching_looks_like": "Meets: locates the actual cause — points to the `as GenerationOutput` cast in adapter.ts as where the null shape is laundered into a non-null type, and states that partial/streaming rows have a null output_json, rather than fixing the throw at the client map.",
+          "correcting_looks_like": "Above: names the cast as the origin AND explains the mechanism end to end (DB writes output_json NULL until finalise -> `as` cast strips `| null` -> Generation.output is dishonestly typed non-null -> client reads .usage.totalTokens unguarded -> TypeError, but only when a partial/streaming row is in the set), explicitly cites the 'typechecks but crashes for one variant => lying cast, not logic error' tell, and gives a fix that restores honesty at the seam — model `output` as `GenerationOutput | null` (and/or a `partial` variant), drop the `as`, handle null in the adapter or component — not a defensive `?.` slapped only on line 34."
+        },
+        "rubric_exemplars": {
+          "below": "Stops at the crash site: 'line 34 dereferences null, add optional chaining / a null guard', or blames the client component / the data being 'missing', without identifying the adapter cast as the source of the false non-null guarantee.",
+          "meets": "Identifies the cross-file cause: the adapter's `row.output_json as GenerationOutput` casts a nullable jsonb column to a non-null type, so partial/streaming rows (output_json = NULL) carry a null `output` that the client then dereferences. Connects it to the 'only crashes for partial rows' variant.",
+          "above": "All of Meets PLUS the full failure mechanism and the explicit tell — 'typechecks yet crashes for exactly one data variant means an asserted-not-verified shape (a lying cast), not a logic error at the throw site' — reached via an efficient path (symptom -> adapter, little time wasted re-reading the client component or type file), and proposes the honest-seam fix rather than a band-aid at line 34."
+        }
+      }
+    },
+    {
+      "sequence_index": 3,
+      "routing": {
+        "fit_reason": "J6 tests context-dependent ordering under a hard deadline with one irreversible security item; the day-before-launch context (which AI lacks) is exactly what reorders the stack, and J4 only tests a single fork rather than triage. Near-orderings tighten at band 3.",
+        "ai_floor_hook": "AI gives a plausible generic launch checklist but can't know it ships tomorrow or which item is irreversible confidentiality vs reversible polish; defending #1 on irreversibility/blast-radius (not effort) is the human signal."
+      },
+      "card": {
+        "method_id": "J6",
+        "skill_class": "Judgement",
+        "lever_id": "quiz",
+        "grading_mode": "Keyed",
+        "review": "Auto",
+        "title": "Launch morning: order the last five tasks",
+        "instruction": "Your AI document-generation product goes live to its first three paying tenants tomorrow at 9am. Five tasks are still open and the team is arguing about what to touch first. You have one short window before you freeze the build. Drag the five tasks into the order you'd actually do them, most consequential first, then justify your top pick in one line.",
+        "time_cap_seconds": 300,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Full Stack Product Development",
+          "sub_skills": [
+            "System Design",
+            "Developer Experience",
+            "AI Integration"
+          ],
+          "domain": "AI Product Engineering",
+          "target_band": "3",
+          "target_rung": "intermediate"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "Situation",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "You ship to your first paying tenants tomorrow at 9am. This is a multi-tenant Supabase/Next.js app where each tenant's AI generations (drafts, prompts, outputs) live in shared tables keyed by tenant_id. Five things are still open and contested; pick what to do before the build freezes.",
+            "subtitle": "AI Product Engineering — multi-tenant, day-one launch on Supabase/Next.js",
+            "blocks": [
+              "Open items the team is arguing about:",
+              "• A teammate noticed that the RLS policy on `ai_generations` filters on `created_by` but not `tenant_id` — in staging, Tenant B's API token can SELECT rows belonging to Tenant A. Their AI outputs and the prompts that produced them are readable cross-tenant.",
+              "• A provider/LLM API key showed up in a Slack paste and 'looks' leaked; it lives only in a server-only env var (`OPENAI_API_KEY`, not `NEXT_PUBLIC_*`) and was never bundled to the client. Rotating it is a 2-minute redeploy.",
+              "• `ai_generations` has no index on `(tenant_id, created_at)`; the history list does a seq scan and is slow (~800ms) but correct.",
+              "• The generation screen shows a blank flash while results stream in; a loading skeleton would smooth it.",
+              "• Generated DB types (`supabase gen types`) are stale, so new columns aren't typed in the editor; DX friction, no runtime effect."
+            ],
+            "rules": [
+              "most urgent first"
+            ],
+            "start_label": "Start"
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "ordered_steps",
+          "title": "Order the tasks",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Drag these into the order you'd do them, most urgent first.",
+            "items": [
+              {
+                "id": "t_rls",
+                "label": "Add tenant_id to the RLS policy on ai_generations so no tenant can read another tenant's AI generations"
+              },
+              {
+                "id": "t_key",
+                "label": "Rotate the LLM/provider API key that 'looks' leaked from the Slack paste"
+              },
+              {
+                "id": "t_index",
+                "label": "Add the (tenant_id, created_at) index so the history list stops seq-scanning"
+              },
+              {
+                "id": "t_skeleton",
+                "label": "Add a loading skeleton to the generation screen to hide the blank flash"
+              },
+              {
+                "id": "t_types",
+                "label": "Regenerate the Supabase TypeScript types so new columns are typed"
+              }
+            ],
+            "selection_mode": "ordered",
+            "correct_order": [
+              "t_rls",
+              "t_key",
+              "t_index",
+              "t_skeleton",
+              "t_types"
+            ],
+            "supporting_text": "HIDDEN — judge only. #1 t_rls: consequential AND irreversible — once a paying tenant reads another tenant's confidential AI generations, the disclosure cannot be recalled. #2 t_key: real but reversible and contained — the key never left the server, rotation is a trivial redeploy. #3 t_index: correctness already holds; only latency. #4 t_skeleton: cosmetic UX polish, zero data risk. #5 t_types: pure DX, no runtime or user-facing effect."
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Why is #1 the #1",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "In one line: why is your #1 the #1?",
+            "max_words": 40
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "A candidate's AI returns a generic, plausible launch checklist — and, cued by 'looks leaked', will often rank rotating the API key at or near the top on surface security optics. It cannot know this ships to paying tenants TOMORROW, that the RLS gap is a live cross-tenant confidentiality leak, or that the 'leaked' key is a server-only env var that never reached the client.",
+        "distinguishing_observable": "Is the cross-tenant RLS leak (t_rls) #1 — ranked ABOVE the tempting key-rotation item — and is the one-line defense grounded in confidentiality + irreversibility/blast-radius (a disclosed tenant's data can't be un-disclosed), NOT in effort, ease, or generic 'security comes first'?",
+        "key": {
+          "correct_order": [
+            "t_rls",
+            "t_key",
+            "t_index",
+            "t_skeleton",
+            "t_types"
+          ],
+          "accepted_near_orderings": [
+            [
+              "t_rls",
+              "t_key",
+              "t_skeleton",
+              "t_index",
+              "t_types"
+            ]
+          ],
+          "why_1": "The cross-tenant RLS gap is the only item both consequential AND irreversible: once a paying tenant reads another tenant's confidential AI generations, the disclosure is permanent and cannot be recalled — every other item (including the key, which is server-only and reversible via a trivial rotation) is reversible, contained, or pure polish. Effort/ease is NOT an accepted basis.",
+          "_notes": "Band-3 calibration: t_rls MUST be #1 and t_types MUST be last; no other position for either is accepted. The single tolerated mid-swap is index<->skeleton (positions 3 and 4). Ranking t_key #1 over t_rls is NOT accepted — it indicates reasoning on surface security optics rather than actual blast radius."
+        },
+        "rubric_exemplars": {
+          "below": "Ranks the 'looks leaked' API-key rotation #1 (fooled by surface security optics) with the RLS leak below it, or buries the RLS leak in the middle, or ranks a nice-to-have (types/skeleton) as urgent. One-line defense cites effort, ease, or generic 'security first' rather than the specific irreversible cross-tenant exposure.",
+          "meets": "RLS leak (t_rls) is #1 and the types regen (t_types) is last, with the middle three roughly right; the one-line defense correctly points at the cross-tenant confidentiality exposure.",
+          "above": "Correct order (or the accepted index<->skeleton near-ordering), AND a one-line defense that names irreversibility/blast-radius explicitly — a disclosed tenant's confidential generations can't be un-disclosed — while distinguishing it from the reversible, server-contained key rotation."
+        }
+      }
+    },
+    {
+      "sequence_index": 4,
+      "source_policy": "bank-seeded — template reviewed once, params vary",
+      "routing": {
+        "fit_reason": "E1 is the only method that observes a real build with clean seams across the full stack (schema<->policy<->query<->type must agree) and carries trip stamina; the seeded actor-id seam conflict is the un-AI-able verification step, strongest on the Supabase+Next full-stack seam.",
+        "ai_floor_hook": "The candidate's AI emits every piece — migration, policy, fetch, component — and they compile; the latent user_id-vs-org_id seam ships a cross-tenant leak unless a human verifies isolation actually holds. Working-AND-clean is the Above signal AI can't supply."
+      },
+      "card": {
+        "method_id": "E1",
+        "skill_class": "Execution",
+        "lever_id": "demo",
+        "grading_mode": "Banded",
+        "review": "Review",
+        "title": "Ship per-tenant Saved AI Generations end-to-end",
+        "instruction": "You're on the platform team of an AI product where each tenant org runs its own AI generations (prompts -> model outputs) and must NEVER see another tenant's. Build a working \"Saved Generations\" feature on Next.js (App Router) + TypeScript + Supabase/Postgres: a table for saved generations, a Row-Level Security policy that enforces tenant isolation in the database, a page that lists ONLY the signed-in viewer's own org's generations, and a server action that saves a new generation. Done means: the viewer sees only their own tenant's rows, cross-tenant isolation actually holds, and the save inserts and shows up in the list. Use your normal AI tooling and screen-record the whole build. We care that it works AND that the seam is clean — one consistent tenant-id model across schema, policy, and query, with isolation enforced in the DB, not patched in app code.",
+        "time_cap_seconds": 2700,
+        "required": true,
+        "skill_ref": {
+          "primary_skill": "Full Stack Product Development",
+          "sub_skills": [
+            "Backend Development",
+            "Frontend Development",
+            "Database Design",
+            "AI Integration"
+          ],
+          "domain": "AI Product Engineering",
+          "target_band": "3",
+          "target_rung": "r3"
+        }
+      },
+      "sub_cards": [
+        {
+          "sequence_index": 0,
+          "sub_card_type": "briefing",
+          "interaction_type": "display",
+          "title": "The brief",
+          "response_expected": false,
+          "body_json": {
+            "prompt": "Our product lets each customer org generate and store AI outputs (a prompt plus the model's response). We're adding a \"Saved Generations\" surface so a user can browse the generations their org has saved. Hard rule from security: a user from Org A must never be able to read, list, or stumble into Org B's generations — tenant isolation is a contractual requirement, not a nice-to-have. Build the feature end-to-end on our stack: Next.js App Router + TypeScript on the frontend, Supabase/Postgres with Row-Level Security on the backend. Auth is already wired up: a signed-in request carries the user's identity, and each user belongs to exactly one org.",
+            "subtitle": "AI Product Engineering · multi-tenant SaaS · Supabase + Next.js (App Router)",
+            "blocks": [
+              "Stack is fixed: Next.js (App Router) + TypeScript + Supabase (Postgres + RLS).",
+              "Auth exists. A request resolves to a user (auth.uid()) who belongs to one org. A memberships/profile mapping from user -> org_id is available to you.",
+              "Two things must be true at once: (1) it WORKS — viewer sees only their org's generations, save inserts and appears; (2) the isolation rule is enforced in the DATABASE via RLS, with ONE consistent tenant-id model used by the schema, the policy, and the query.",
+              "Use your own AI tooling exactly how you normally would. Screen-record the entire session including a moment where you prove isolation actually holds (e.g. two tenants, one cannot see the other's rows)."
+            ],
+            "highlight": "Use your normal AI tooling. Screen-record the whole build, including the isolation check."
+          }
+        },
+        {
+          "sequence_index": 1,
+          "sub_card_type": "task",
+          "interaction_type": "ordered_steps",
+          "title": "What to build",
+          "response_expected": false,
+          "body_json": {
+            "steps": [
+              "STANDARD VARIANT — build from scratch:",
+              "1. Schema: create a `generations` table that stores at least { id, prompt, output, created_at } plus a tenant-identifying column. Decide your tenant-id model (per-org is the requirement) and use it consistently.",
+              "2. RLS: enable Row-Level Security on `generations` and write a policy so a signed-in user can SELECT (and INSERT) only rows belonging to their own org. The rule must be enforced in the database, derivable from auth.uid() -> org_id, not by a WHERE clause bolted on in app code.",
+              "3. Read path: a Next.js App Router page (server component / route) with ONE data-fetch function that returns only the viewer's org's generations — relying on RLS for isolation, not re-implementing the filter.",
+              "4. Write path: a server action that inserts a new generation for the viewer's org and surfaces it in the list (revalidate / refetch).",
+              "Working output = viewer sees ONLY their org's rows, a cross-tenant read returns nothing, and a save inserts and renders. Above = working AND clean: one consistent tenant-id model across schema/policy/query, RLS enforced in the DB, no duplicated fetch logic, no app-layer isolation patch, no copy-paste glue."
+            ],
+            "variant_chunk_match": {
+              "prompt": "CHUNK-MATCH VARIANT — reconcile, don't rebuild from zero. Your AI assistant (or a teammate) already produced four pieces that SHOULD form this feature. Individually each compiles and looks fine. Wired together they ship a silent cross-tenant leak, because the pieces do not agree on what identifies a tenant. Your job: make them work as ONE feature with a single consistent tenant-id model, isolation enforced in the DB, and prove the leak is gone — within the time cap.",
+              "pieces": [
+                "PIECE 1 — schema migration (supabase/migrations/0001_generations.sql):\ncreate table public.generations (\n  id uuid primary key default gen_random_uuid(),\n  org_id uuid not null references public.orgs(id),\n  user_id uuid not null references auth.users(id),\n  prompt text not null,\n  output text not null,\n  created_at timestamptz not null default now()\n);\nalter table public.generations enable row level security;\n-- (note: table carries BOTH org_id and user_id; tenancy is meant to be per-org)",
+                "PIECE 2 — RLS policy (supabase/migrations/0002_generations_rls.sql):\ncreate policy generations_tenant_isolation\n  on public.generations\n  for select\n  using ( org_id = (select org_id from public.memberships where user_id = auth.uid()) );\ncreate policy generations_insert\n  on public.generations\n  for insert\n  with check ( org_id = (select org_id from public.memberships where user_id = auth.uid()) );\n-- policy identifies the tenant by ORG_ID",
+                "PIECE 3 — data fetch fn (lib/generations.ts):\nimport { createClient } from '@/lib/supabase/server';\nexport async function getMyGenerations() {\n  const supabase = createClient();\n  const { data: { user } } = await supabase.auth.getUser();\n  const { data, error } = await supabase\n    .from('generations')\n    .select('id, prompt, output, created_at')\n    .eq('user_id', user!.id)            // <-- filters by USER_ID\n    .order('created_at', { ascending: false });\n  if (error) throw error;\n  return data;\n}\n// fetch fn identifies the actor/tenant by USER_ID",
+                "PIECE 4 — list component (app/generations/page.tsx):\nimport { getMyGenerations } from '@/lib/generations';\nexport default async function GenerationsPage() {\n  const generations = await getMyGenerations();\n  return (\n    <ul>\n      {generations.map((g) => (\n        <li key={g.id}>\n          <p>{g.prompt}</p>\n          <pre>{g.output}</pre>\n        </li>\n      ))}\n    </ul>\n  );\n}"
+              ],
+              "seeded_conflict": "The RLS policy (Piece 2) isolates by ORG_ID, but the data-fetch function (Piece 3) filters by USER_ID. The page still 'works' for the demo because each test user only has their own rows — so the user_id filter happens to return the right set and everything renders. The latent failures: (a) the moment a generation is saved on behalf of the org but by a different user, or a user is moved between orgs, the user_id filter shows the WRONG set; and (b) more dangerously, the app-layer user_id filter is doing the isolation work that RLS was supposed to do — so the tenant-id model is split across two columns and two layers. If a future query forgets the .eq('user_id'), the org_id RLS policy is the only thing standing between Org A and Org B, and nobody has verified it actually holds. The candidate must collapse this to ONE consistent tenant-id model (org_id everywhere, enforced by RLS), remove the redundant/incorrect app-layer filter, and prove cross-tenant isolation holds at the DB seam — not paper over it by 'making both filters match'."
+            }
+          }
+        },
+        {
+          "sequence_index": 2,
+          "sub_card_type": "reflection",
+          "interaction_type": "display",
+          "title": "How we evaluate",
+          "response_expected": false,
+          "body_json": {
+            "guidance": "We care that it WORKS and that the SEAM is clean. Working means: the viewer sees only their own tenant's generations, a cross-tenant read returns nothing, and saving a new generation inserts it and shows it in the list. Clean means: one consistent tenant-id model across the schema, the RLS policy, and the query; isolation enforced in the database via RLS rather than patched with an app-layer WHERE clause; no duplicated fetch logic; no copy-paste glue holding mismatched pieces together. If you accept AI-generated pieces, the interesting part is the seam where they're supposed to agree — show us you verified it.",
+            "links": []
+          }
+        },
+        {
+          "sequence_index": 3,
+          "sub_card_type": "task",
+          "interaction_type": "long_text",
+          "title": "Walk us through the seam",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Walk us through what you built. Specifically: what is your tenant-id model, which layer enforces isolation and why there, and where exactly did you verify the pieces agree? If you worked from the given pieces, tell us what was wrong at the seam, how you proved a cross-tenant read returns nothing, and what you changed to make the tenant-id model consistent.",
+            "placeholder": "e.g. 'Tenancy is per-org. The single source of truth is generations.org_id, isolated by the RLS SELECT/INSERT policy resolving auth.uid()->org_id; the app fetch does NOT re-filter by user_id because...'",
+            "min_words": 60,
+            "max_words": 300
+          }
+        },
+        {
+          "sequence_index": 4,
+          "sub_card_type": "task",
+          "interaction_type": "repo_task",
+          "title": "Upload your screen recording",
+          "response_expected": true,
+          "body_json": {
+            "prompt": "Build per-tenant Saved AI Generations end-to-end. Grab the starter, wire the schema + RLS policy + tenant-scoped query + component so two tenants never see each other's generations, then submit your work as a .zip.",
+            "required": true,
+            "starter_repo": {
+              "name": "saved-generations-starter",
+              "zip_url": "/repos/saved-generations-starter.zip",
+              "github_url": "https://github.com/Omramanuj/cloud-code-editor"
+            }
+          }
+        }
+      ],
+      "judge": {
+        "ai_floor": "The candidate's AI emits all four pieces — table, RLS policy, fetch fn, list component — and they compile and render in a happy-path demo where each test user only owns their own rows. AI will also confidently 'reconcile' the chunk-match pieces by making both filters use the same column (or by adding the matching .eq() / WHERE in app code) and declare it fixed. What AI does NOT give for free: recognizing that the seam conflict is a SPLIT TENANT-ID MODEL (org_id in the policy vs user_id in the query) that silently ships a cross-tenant leak, deciding which single model is correct for the per-org requirement, enforcing it in the DB rather than in app code, and actually verifying isolation holds with a real two-tenant check.",
+        "distinguishing_observable": "Does the deliverable actually work at the seam — cross-tenant read returns nothing, save inserts and renders — AND is there ONE consistent tenant-id model (org_id everywhere) with isolation enforced by RLS in the DB, no redundant app-layer user_id filter doing the isolation work, no duplicated fetch logic, no copy-paste glue reconciling the mismatch?",
+        "working_output_definition": "On the per-tenant 'Saved Generations' feature: (1) a signed-in user lists ONLY their own org's generations; (2) a user authenticated into Org A receives ZERO rows belonging to Org B (cross-tenant isolation holds even if the app-layer filter were removed, because RLS enforces it); (3) the save server action inserts a new generation for the viewer's org and it appears in the list on refresh/revalidate; (4) both the standard build and the reconciled chunk-match build satisfy 1-3.",
+        "harness_checks": [
+          "isolation_select_test: as Org A's authenticated session, SELECT from generations where seeded rows exist for both Org A and Org B -> returns ONLY Org A's rows; count of Org B rows visible to Org A == 0.",
+          "rls_is_the_enforcer_test: with the app-layer WHERE/.eq filter bypassed (query the table directly under Org A's JWT), Org B's rows are STILL not returned — proves isolation lives in the DB (RLS), not in app code.",
+          "insert_test: server action insert under Org A's session creates a row with the correct org_id and check-constraint passes; the new row is then returned by the viewer's list query.",
+          "insert_isolation_test: an attempted insert with an org_id that is not the viewer's org is rejected by the RLS WITH CHECK policy.",
+          "single_model_test: the SELECT policy, the INSERT WITH CHECK policy, and the data-fetch query all key tenancy off the SAME column (org_id); no surviving app-layer user_id filter is performing isolation. (Static check on migration + fetch fn.)",
+          "render_both_variants_test: the /generations page renders the viewer's org rows for both the standard and chunk-match reconciled builds without runtime error."
+        ],
+        "rubric_exemplars": {
+          "below": "Doesn't work or isn't clean at the seam: ships the chunk-match pieces as-is (policy isolates by org_id, query filters by user_id) so isolation is silently carried by the app-layer user_id filter and would break the moment that filter is removed or a user changes orgs; OR 'reconciles' by making both filters match on a column without enforcing isolation in the DB; OR the save doesn't insert / a cross-tenant read leaks Org B's rows; OR the feature is incomplete.",
+          "meets": "Working, complete deliverable meeting the working-output definition: viewer sees only their own org's generations, a cross-tenant read returns nothing, save inserts and renders, both list and write function. Isolation holds, but the tenant-id model may still be partly redundant (e.g. RLS by org_id AND a belt-and-suspenders app-layer org filter), or there's minor duplicated fetch logic — it works but isn't fully clean.",
+          "above": "Working AND clean: ONE consistent tenant-id model (org_id) across schema, RLS policy, and query; isolation enforced in the database by RLS (SELECT + INSERT WITH CHECK), NOT patched in app code; the incorrect/redundant user_id filter is removed rather than 'matched'; no duplicated fetch logic, no copy-paste glue; and the candidate verifies isolation actually holds at the seam (demonstrates a two-tenant cross-read returning nothing, ideally with the app filter bypassed to prove RLS is the enforcer). Names the Speed-vs-Quality and AI-Leverage-vs-Engineering-Depth tradeoff explicitly.",
+          "_tension_framing": "Speed vs Quality: the chunk-match pieces let you 'finish' in minutes by accepting compiling AI output, but quality is the cross-tenant leak you only avoid by reconciling the id model and verifying isolation. AI Leverage vs Engineering Depth: leverage gets you four pieces that render; depth is recognizing the split user_id/org_id model, collapsing it to one DB-enforced rule, deleting the app-layer patch, and proving isolation holds."
+        }
+      }
+    }
+  ]
+}
