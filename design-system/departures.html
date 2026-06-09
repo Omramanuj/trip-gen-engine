@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Passport — Departures Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CAREER PASSPORT — "DEPARTURES" DESIGN SYSTEM
+   Tokens, components and patterns. Single-file living style guide.
+   ============================================================ */
+
+:root{
+  /* ---------- COLOR : CREAM / SURFACE ---------- */
+  --cream-50:#FFFBF6;   /* card / panel surface */
+  --cream-100:#FCF3E9;  /* app canvas */
+  --cream-200:#F7E9DA;  /* recessed panel */
+  --cream-300:#EFDCC9;  /* hairline border on cream */
+  --cream-400:#E2C9AE;  /* stronger border / divider */
+
+  /* ---------- COLOR : TEAL (signature surface) ---------- */
+  --teal-700:#2C645F;
+  --teal-600:#347572;   /* primary teal panel */
+  --teal-500:#3F8682;
+  --teal-300:#9CC3BF;
+  --teal-100:#DEEAE7;
+  --teal-50:#EEF4F2;
+
+  /* ---------- COLOR : CORAL (accent / primary action) ---------- */
+  --coral-700:#D9604F;
+  --coral-600:#E66E5C;
+  --coral-500:#EE897C;  /* brand coral */
+  --coral-400:#F2A294;
+  --coral-200:#F8CFC6;
+  --coral-100:#FBE3DD;
+
+  /* ---------- COLOR : SKY (secondary / informational) ---------- */
+  --sky-700:#5C9CB8;
+  --sky-600:#79B3CD;
+  --sky-500:#9CCEE0;   /* brand sky */
+  --sky-300:#C3E0EC;
+  --sky-100:#E6F2F7;
+
+  /* ---------- COLOR : INK (text on light) ---------- */
+  --ink-900:#1F344C;   /* display headings */
+  --ink-700:#2E4A6B;   /* the reference "NYC" navy */
+  --ink-600:#3F5A78;
+  --ink-500:#62799A;   /* body muted */
+  --ink-400:#8B9DB6;   /* secondary / captions */
+  --ink-300:#B0BECE;   /* placeholder / disabled */
+
+  /* ---------- ON-DARK (text over teal/coral) ---------- */
+  --on-dark:#F6FBF9;
+  --on-dark-muted:rgba(246,251,249,0.72);
+  --on-dark-faint:rgba(246,251,249,0.16);
+
+  /* ---------- SEMANTIC ---------- */
+  --evidence:#347572;  /* verified / proof = teal */
+  --signal:#E66E5C;    /* attention / action = coral */
+  --info:#79B3CD;      /* neutral info = sky */
+  --warn:#D99A4E;
+  --positive:#4E9A78;
+
+  /* ---------- RADIUS ---------- */
+  --r-xs:8px;
+  --r-sm:12px;
+  --r-md:18px;
+  --r-lg:26px;
+  --r-xl:34px;
+  --r-2xl:42px;
+  --r-pill:999px;
+
+  /* ---------- ELEVATION (warm-tinted, soft) ---------- */
+  --sh-xs:0 1px 2px rgba(74,55,40,.05);
+  --sh-sm:0 2px 10px -2px rgba(74,55,40,.08);
+  --sh-md:0 14px 34px -10px rgba(74,55,40,.14);
+  --sh-lg:0 26px 60px -16px rgba(56,40,28,.20);
+  --sh-coral:0 18px 40px -14px rgba(214,90,72,.45);
+  --sh-teal:0 18px 42px -14px rgba(38,92,87,.42);
+  --sh-sky:0 16px 36px -14px rgba(92,156,184,.40);
+
+  /* ---------- TYPE ---------- */
+  --font-display:"Fraunces",Georgia,serif;
+  --font-body:"Hanken Grotesk",system-ui,sans-serif;
+  --font-mono:"Geist Mono",ui-monospace,"SF Mono",monospace;
+
+  /* ---------- SPACE (4px base) ---------- */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px;
+  --s6:24px; --s8:32px; --s10:40px; --s12:48px; --s16:64px; --s20:80px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-padding-top:24px;}
+body{
+  font-family:var(--font-body);
+  background:
+    radial-gradient(1200px 700px at 85% -5%, var(--coral-100) 0%, transparent 55%),
+    radial-gradient(1000px 600px at -5% 10%, var(--sky-100) 0%, transparent 50%),
+    var(--cream-100);
+  color:var(--ink-700);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--coral-200);color:var(--ink-900);}
+
+/* ---------- LAYOUT SHELL ---------- */
+.wrap{display:grid;grid-template-columns:248px 1fr;max-width:1500px;margin:0 auto;}
+nav.toc{
+  position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+  padding:var(--s8) var(--s5);border-right:1px solid var(--cream-300);
+}
+nav.toc .brand{display:flex;align-items:center;gap:10px;margin-bottom:var(--s8);}
+nav.toc .stamp{
+  width:38px;height:38px;border-radius:11px;flex:none;
+  background:linear-gradient(135deg,var(--coral-500),var(--coral-600));
+  box-shadow:var(--sh-coral);display:grid;place-items:center;
+}
+nav.toc .brand b{font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--ink-900);letter-spacing:-.01em;line-height:1.1;}
+nav.toc .brand span{display:block;font-family:var(--font-mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-400);margin-top:2px;}
+nav.toc .grp{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-400);margin:var(--s6) 0 var(--s2);}
+nav.toc a{display:block;text-decoration:none;color:var(--ink-600);font-size:14px;padding:6px 10px;border-radius:9px;font-weight:500;transition:.15s;}
+nav.toc a:hover{background:var(--cream-50);color:var(--ink-900);}
+
+main{padding:var(--s12) var(--s12) var(--s20);max-width:1180px;}
+@media(max-width:980px){
+  .wrap{grid-template-columns:1fr;}
+  nav.toc{display:none;}
+  main{padding:var(--s8) var(--s5) var(--s16);}
+}
+
+/* ---------- SECTION SCAFFOLD ---------- */
+section{margin-bottom:var(--s20);scroll-margin-top:24px;}
+.kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--coral-600);font-weight:500;}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(40px,6vw,68px);line-height:1.02;letter-spacing:-.02em;color:var(--ink-900);margin:var(--s3) 0 var(--s4);}
+h2{font-family:var(--font-display);font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.08;letter-spacing:-.015em;color:var(--ink-900);margin:var(--s2) 0 var(--s4);}
+h3{font-family:var(--font-display);font-weight:600;font-size:23px;color:var(--ink-900);margin:var(--s8) 0 var(--s3);letter-spacing:-.01em;}
+.lede{font-size:18px;color:var(--ink-500);max-width:62ch;}
+p.note{font-size:14.5px;color:var(--ink-500);max-width:68ch;margin-top:var(--s2);}
+.divider{height:1px;background:linear-gradient(90deg,var(--cream-400),transparent);margin:var(--s8) 0;}
+
+/* generic demo canvas */
+.canvas{
+  background:var(--cream-50);border:1px solid var(--cream-300);
+  border-radius:var(--r-xl);padding:var(--s8);box-shadow:var(--sh-sm);
+  margin-top:var(--s4);
+}
+.row{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;}
+.col{display:flex;flex-direction:column;gap:var(--s4);}
+.cap{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-400);}
+
+/* =====================================================================
+   FOUNDATION : COLOR
+   ===================================================================== */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:var(--s3);margin-top:var(--s4);}
+.swatch{border-radius:var(--r-md);overflow:hidden;border:1px solid var(--cream-300);background:var(--cream-50);box-shadow:var(--sh-xs);}
+.swatch .chip{height:74px;}
+.swatch .meta{padding:9px 11px;}
+.swatch .meta b{display:block;font-size:13px;color:var(--ink-900);font-weight:600;}
+.swatch .meta code{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-400);}
+.fam-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-600);margin:var(--s6) 0 var(--s1);font-weight:500;}
+.fam-desc{font-size:13.5px;color:var(--ink-500);margin-bottom:var(--s2);max-width:60ch;}
+
+/* =====================================================================
+   FOUNDATION : TYPE SPECIMENS
+   ===================================================================== */
+.spec{display:grid;grid-template-columns:120px 1fr;gap:var(--s4);align-items:baseline;padding:var(--s4) 0;border-bottom:1px dashed var(--cream-400);}
+.spec .tag{font-family:var(--font-mono);font-size:11px;color:var(--ink-400);letter-spacing:.04em;padding-top:6px;}
+.spec .tag em{display:block;font-style:normal;color:var(--ink-300);font-size:10px;margin-top:3px;}
+.t-dxl{font-family:var(--font-display);font-weight:600;font-size:56px;line-height:1.02;letter-spacing:-.02em;color:var(--ink-900);}
+.t-dlg{font-family:var(--font-display);font-weight:600;font-size:40px;line-height:1.05;letter-spacing:-.018em;color:var(--ink-900);}
+.t-dmd{font-family:var(--font-display);font-weight:500;font-size:30px;line-height:1.1;color:var(--ink-900);}
+.t-title{font-family:var(--font-body);font-weight:700;font-size:22px;color:var(--ink-900);}
+.t-blg{font-family:var(--font-body);font-weight:400;font-size:18px;color:var(--ink-700);}
+.t-body{font-family:var(--font-body);font-weight:400;font-size:15px;color:var(--ink-700);}
+.t-small{font-family:var(--font-body);font-weight:500;font-size:13px;color:var(--ink-500);}
+.t-label{font-family:var(--font-mono);font-weight:500;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-600);}
+
+/* =====================================================================
+   TOKEN STRIPS : RADIUS / SHADOW / SPACE
+   ===================================================================== */
+.token-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s4);margin-top:var(--s4);}
+.tk{text-align:center;}
+.tk .box{height:84px;background:var(--cream-50);border:1px solid var(--cream-300);box-shadow:var(--sh-sm);margin-bottom:8px;}
+.tk b{font-size:13px;color:var(--ink-900);}
+.tk code{display:block;font-family:var(--font-mono);font-size:10.5px;color:var(--ink-400);}
+.sh-box{height:84px;border-radius:var(--r-md);background:var(--cream-50);margin-bottom:8px;}
+.space-bar{height:18px;background:var(--coral-300,var(--coral-400));border-radius:4px;}
+
+/* =====================================================================
+   COMPONENTS
+   ===================================================================== */
+
+/* buttons */
+.btn{font-family:var(--font-body);font-weight:600;font-size:15px;border:none;cursor:pointer;
+  border-radius:var(--r-pill);padding:13px 26px;display:inline-flex;align-items:center;gap:9px;transition:.18s ease;line-height:1;}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--coral-500);color:#fff;box-shadow:var(--sh-coral);}
+.btn-primary:hover{background:var(--coral-600);box-shadow:0 22px 46px -12px rgba(214,90,72,.55);transform:translateY(-1px);}
+.btn-teal{background:var(--teal-600);color:var(--on-dark);box-shadow:var(--sh-teal);}
+.btn-teal:hover{background:var(--teal-700);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--ink-700);border:1.5px solid var(--cream-400);}
+.btn-ghost:hover{border-color:var(--ink-400);background:var(--cream-50);}
+.btn-soft{background:var(--coral-100);color:var(--coral-700);}
+.btn-soft:hover{background:var(--coral-200);}
+.btn-sky{background:var(--sky-500);color:var(--ink-700);box-shadow:var(--sh-sky);}
+.btn-sky:hover{background:var(--sky-600);}
+.icon-circle{width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;display:grid;place-items:center;transition:.18s;}
+.icon-circle.sky{background:var(--sky-500);box-shadow:var(--sh-sky);}
+.icon-circle.sky:hover{background:var(--sky-600);transform:translateX(2px);}
+.icon-circle.coral{background:var(--coral-500);box-shadow:var(--sh-coral);}
+.icon-circle.ghost{background:var(--cream-50);border:1.5px solid var(--cream-400);}
+
+/* pills / tags / badges */
+.pill{font-family:var(--font-body);font-weight:600;font-size:13px;border-radius:var(--r-pill);padding:7px 15px;display:inline-flex;align-items:center;gap:6px;}
+.pill.teal{background:var(--teal-100);color:var(--teal-700);}
+.pill.coral{background:var(--coral-100);color:var(--coral-700);}
+.pill.sky{background:var(--sky-100);color:var(--sky-700);}
+.pill.cream{background:var(--cream-200);color:var(--ink-600);}
+.tag-label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:500;padding:5px 11px;border-radius:7px;}
+.badge-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* segmented tabs (from "Choose a Plane") */
+.segmented{display:inline-flex;gap:10px;background:var(--teal-700);padding:10px;border-radius:var(--r-lg);}
+.seg{display:flex;align-items:center;gap:10px;padding:14px 20px;border-radius:var(--r-md);font-weight:600;font-size:14px;cursor:pointer;transition:.18s;border:none;font-family:var(--font-body);}
+.seg.on{background:var(--on-dark-faint);color:var(--on-dark);}
+.seg.off{background:transparent;color:var(--on-dark-muted);}
+.seg .ic{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14);display:grid;place-items:center;}
+
+/* light segmented for web */
+.seg-light{display:inline-flex;background:var(--cream-200);padding:5px;border-radius:var(--r-pill);}
+.seg-light button{border:none;background:transparent;font-family:var(--font-body);font-weight:600;font-size:13.5px;color:var(--ink-500);padding:9px 18px;border-radius:var(--r-pill);cursor:pointer;transition:.15s;}
+.seg-light button.on{background:var(--cream-50);color:var(--ink-900);box-shadow:var(--sh-xs);}
+
+/* input + chat composer */
+.field{display:flex;align-items:center;gap:10px;background:var(--cream-50);border:1.5px solid var(--cream-300);border-radius:var(--r-pill);padding:13px 18px;}
+.field input{border:none;background:none;outline:none;font-family:var(--font-body);font-size:15px;color:var(--ink-700);flex:1;}
+.field input::placeholder{color:var(--ink-300);}
+.composer{display:flex;align-items:center;gap:12px;background:var(--cream-50);border:1.5px solid var(--cream-300);border-radius:var(--r-pill);padding:10px 10px 10px 22px;box-shadow:var(--sh-sm);}
+.composer input{border:none;background:none;outline:none;font-size:15.5px;color:var(--ink-700);flex:1;font-family:var(--font-body);}
+.composer input::placeholder{color:var(--ink-300);}
+.composer .attach{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--cream-200);cursor:pointer;color:var(--ink-500);}
+
+/* base card */
+.card{background:var(--cream-50);border-radius:var(--r-lg);box-shadow:var(--sh-md);padding:var(--s6);border:1px solid rgba(255,255,255,.6);}
+
+/* stat tile (SEATS / RANGE / SPEED) */
+.stat{background:var(--cream-50);border-radius:var(--r-md);padding:16px 16px 18px;box-shadow:var(--sh-sm);border:1px solid var(--cream-300);min-width:0;}
+.stat .ic{width:38px;height:38px;border-radius:11px;background:var(--sky-100);color:var(--sky-700);display:grid;place-items:center;margin-bottom:14px;}
+.stat .lab{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-400);}
+.stat .val{font-family:var(--font-display);font-weight:600;font-size:21px;color:var(--ink-900);margin-top:3px;letter-spacing:-.01em;}
+
+/* journey pill (the notched NYC From/To shape) */
+.journey-pill{
+  position:relative;background:var(--sky-500);color:var(--ink-700);
+  border-radius:var(--r-lg);padding:20px 24px;display:flex;align-items:center;gap:18px;
+  box-shadow:var(--sh-sky);max-width:420px;
+}
+.journey-pill .orb{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.45);display:grid;place-items:center;flex:none;color:var(--ink-700);}
+.journey-pill .place{font-family:var(--font-display);font-weight:600;font-size:26px;color:var(--ink-700);line-height:1;letter-spacing:-.01em;}
+.journey-pill .legs{display:flex;gap:30px;margin-top:8px;}
+.journey-pill .leg .k{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(46,74,107,.6);}
+.journey-pill .leg .v{font-weight:600;font-size:14px;color:var(--ink-700);}
+
+/* bottom CTA bar (Book Now) */
+.cta-bar{background:var(--coral-500);border-radius:var(--r-lg);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh-coral);cursor:pointer;}
+.cta-bar .t{color:#fff;font-weight:700;font-size:17px;}
+.cta-bar .t b{font-family:var(--font-display);font-size:20px;margin-left:6px;}
+.cta-bar .bm{color:rgba(255,255,255,.85);}
+
+/* media thumbnail strip (Available Planes) */
+.thumb-strip{display:flex;gap:10px;align-items:stretch;}
+.thumb{width:96px;height:78px;border-radius:var(--r-sm);overflow:hidden;flex:none;position:relative;box-shadow:var(--sh-xs);}
+.thumb img{width:100%;height:100%;object-fit:cover;}
+.thumb-next{width:50px;border-radius:var(--r-sm);background:var(--coral-500);display:grid;place-items:center;color:#fff;cursor:pointer;box-shadow:var(--sh-coral);}
+
+/* map preview card */
+.mapcard{background:var(--teal-50);border-radius:var(--r-md);padding:18px;position:relative;overflow:hidden;border:1px solid var(--teal-100);}
+.mapcard .lines{position:absolute;inset:0;opacity:.5;}
+.mapcard .k{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-600);position:relative;}
+.mapcard .n{font-family:var(--font-display);font-weight:600;font-size:22px;color:var(--teal-700);position:relative;margin:2px 0 12px;}
+
+/* the TRIP card (teal panel "Choose a Plane") */
+.trip-card{
+  position:relative;background:linear-gradient(160deg,var(--teal-600),var(--teal-700));
+  border-radius:var(--r-2xl);padding:26px;color:var(--on-dark);overflow:hidden;
+  box-shadow:var(--sh-teal);max-width:360px;
+}
+.trip-card .ghost-word{position:absolute;top:18%;left:-6%;font-family:var(--font-display);font-weight:700;font-size:96px;color:rgba(255,255,255,.06);letter-spacing:-.02em;pointer-events:none;white-space:nowrap;}
+.trip-head{display:flex;align-items:center;justify-content:space-between;position:relative;}
+.trip-head .ttl{font-weight:700;font-size:16px;}
+.trip-art{height:150px;display:grid;place-items:center;position:relative;margin:8px 0;}
+.trip-detail{position:relative;background:var(--coral-500);border-radius:var(--r-lg) var(--r-lg) 8px var(--r-lg);padding:18px 20px;box-shadow:var(--sh-coral);}
+.trip-detail .name{font-family:var(--font-display);font-weight:600;font-size:25px;}
+.trip-detail .sub{font-size:13px;color:rgba(255,255,255,.85);margin-top:2px;}
+.trip-detail .more{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:12px;display:inline-flex;align-items:center;gap:6px;color:#fff;}
+
+/* =====================================================================
+   PATTERN : WEB APP SHELL
+   ===================================================================== */
+.appframe{border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--sh-lg);border:1px solid var(--cream-300);background:var(--cream-100);}
+.appgrid{display:grid;grid-template-columns:230px 1fr 296px;min-height:620px;}
+@media(max-width:860px){.appgrid{grid-template-columns:1fr;}.appgrid .rail-l,.appgrid .rail-r{display:none;}}
+
+.rail-l{background:var(--cream-50);border-right:1px solid var(--cream-300);padding:22px 16px;display:flex;flex-direction:column;}
+.rail-l .pp{display:flex;align-items:center;gap:10px;padding:0 6px 18px;}
+.rail-l .pp .stamp{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--coral-500),var(--coral-600));box-shadow:var(--sh-coral);flex:none;display:grid;place-items:center;}
+.rail-l .pp b{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--ink-900);}
+.rail-l .new{background:var(--teal-600);color:#fff;border:none;border-radius:var(--r-pill);padding:11px 16px;font-family:var(--font-body);font-weight:600;font-size:14px;display:flex;align-items:center;gap:9px;cursor:pointer;box-shadow:var(--sh-teal);margin-bottom:18px;}
+.rail-l .grp{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-400);padding:0 8px;margin:10px 0 6px;}
+.histitem{padding:10px 10px;border-radius:11px;cursor:pointer;transition:.15s;display:flex;gap:9px;align-items:flex-start;}
+.histitem:hover{background:var(--cream-200);}
+.histitem.on{background:var(--coral-100);}
+.histitem .ln{font-size:13.5px;color:var(--ink-700);font-weight:500;line-height:1.3;}
+.histitem .meta{font-family:var(--font-mono);font-size:10px;color:var(--ink-400);margin-top:2px;}
+.histitem .d{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:none;}
+.rail-l .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 8px 0;border-top:1px solid var(--cream-300);}
+.rail-l .me .av{width:34px;height:34px;border-radius:50%;background:var(--sky-300);display:grid;place-items:center;font-weight:700;color:var(--ink-700);font-size:13px;}
+
+.canvas-chat{padding:30px 36px;display:flex;flex-direction:column;gap:18px;overflow:hidden;position:relative;}
+.chat-greet .k{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral-600);}
+.chat-greet h4{font-family:var(--font-display);font-weight:600;font-size:34px;color:var(--ink-900);letter-spacing:-.015em;line-height:1.05;margin-top:6px;}
+.chat-greet p{color:var(--ink-500);font-size:15px;margin-top:6px;max-width:48ch;}
+
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+.qcard{border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:.2s;border:1px solid transparent;position:relative;overflow:hidden;}
+.qcard:hover{transform:translateY(-3px);}
+.qcard .qi{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px;}
+.qcard h5{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--ink-900);}
+.qcard p{font-size:13px;color:var(--ink-500);margin-top:3px;line-height:1.4;}
+.qcard .arr{position:absolute;top:20px;right:20px;color:var(--ink-300);transition:.2s;}
+.qcard:hover .arr{color:var(--ink-600);transform:translate(3px,-3px);}
+.q-trip{background:var(--teal-50);border-color:var(--teal-100);}
+.q-trip .qi{background:var(--teal-600);color:#fff;}
+.q-upload{background:var(--sky-100);border-color:var(--sky-300);}
+.q-upload .qi{background:var(--sky-500);color:var(--ink-700);}
+.q-prep{background:var(--coral-100);border-color:var(--coral-200);}
+.q-prep .qi{background:var(--coral-500);color:#fff;}
+.q-resume{background:var(--cream-200);border-color:var(--cream-400);}
+.q-resume .qi{background:var(--ink-700);color:#fff;}
+
+.canvas-chat .composer{margin-top:auto;}
+
+.rail-r{background:var(--cream-50);border-left:1px solid var(--cream-300);padding:24px 20px;display:flex;flex-direction:column;gap:16px;}
+.rail-r .rk{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-400);}
+
+/* =====================================================================
+   PATTERN : MOBILE PHONE TRIO
+   ===================================================================== */
+.trio{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;padding:var(--s8) var(--s6);
+  background:linear-gradient(180deg,var(--cream-200),var(--cream-100));border-radius:var(--r-2xl);}
+.phone{width:290px;border-radius:var(--r-2xl);padding:14px;box-shadow:var(--sh-lg);flex:none;position:relative;}
+.phone .notch{width:42%;height:5px;border-radius:99px;background:currentColor;opacity:.18;margin:2px auto 16px;}
+.phone.cream{background:var(--cream-50);color:var(--ink-700);}
+.phone.teal{background:var(--teal-600);color:var(--on-dark);}
+.ph-top{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;}
+.ph-top .dots{display:grid;grid-template-columns:repeat(3,4px);grid-auto-rows:4px;gap:3px;}
+.ph-top .dots i{background:currentColor;opacity:.5;border-radius:1px;}
+.ph-title{font-family:var(--font-display);font-weight:600;font-size:30px;letter-spacing:-.015em;margin:18px 0 4px;}
+
+footer{padding:var(--s12);text-align:center;color:var(--ink-400);font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;border-top:1px solid var(--cream-300);}
+
+/* small util */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.muted{color:var(--ink-500);}
+.usage{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:var(--s4);}
+.do,.dont{border-radius:var(--r-md);padding:18px 20px;font-size:14px;}
+.do{background:var(--teal-50);border:1px solid var(--teal-100);}
+.dont{background:var(--coral-100);border:1px solid var(--coral-200);}
+.do h6,.dont h6{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
+.do h6{color:var(--teal-700);} .dont h6{color:var(--coral-700);}
+.do ul,.dont ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.do li::before{content:"→ ";color:var(--teal-600);} .dont li::before{content:"✕ ";color:var(--coral-600);}
+.do li,.dont li{color:var(--ink-700);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ TOC ============ -->
+<nav class="toc">
+  <div class="brand">
+    <div class="stamp">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div>
+    <div><b>Career Passport</b><span>Departures DS</span></div>
+  </div>
+  <div class="grp">Foundations</div>
+  <a href="#intro">Concept &amp; metaphor</a>
+  <a href="#color">Color</a>
+  <a href="#type">Typography</a>
+  <a href="#radius">Radius &amp; space</a>
+  <a href="#elevation">Elevation</a>
+  <div class="grp">Components</div>
+  <a href="#buttons">Buttons</a>
+  <a href="#pills">Pills &amp; tabs</a>
+  <a href="#inputs">Inputs &amp; chat</a>
+  <a href="#cards">Cards &amp; tiles</a>
+  <a href="#trip">The Trip card</a>
+  <div class="grp">Patterns</div>
+  <a href="#webapp">Web app shell</a>
+  <a href="#mobile">Mobile trio</a>
+  <a href="#voice">Voice &amp; usage</a>
+</nav>
+
+<!-- ============ MAIN ============ -->
+<main>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="kicker">Career Passport · Design System v1</div>
+  <h1>Departures.</h1>
+  <p class="lede">A warm, editorial system for a chat-first career platform. Built on the soft geometry of a travel app — cream canvas, teal surfaces, coral action, sky-blue information — reframed around one idea: <strong>a candidate's assessment isn't a test, it's a journey they depart on.</strong></p>
+
+  <div class="canvas" style="margin-top:32px;">
+    <div class="row" style="gap:40px;align-items:flex-start;">
+      <div style="flex:1;min-width:240px;">
+        <div class="t-label" style="margin-bottom:10px;">The metaphor</div>
+        <table style="border-collapse:collapse;width:100%;font-size:14.5px;">
+          <tr style="border-bottom:1px solid var(--cream-300);"><td style="padding:9px 0;color:var(--ink-400);font-family:var(--font-mono);font-size:12px;">Assessment</td><td style="padding:9px 0;font-weight:600;color:var(--ink-900);">→ a Trip</td></tr>
+          <tr style="border-bottom:1px solid var(--cream-300);"><td style="padding:9px 0;color:var(--ink-400);font-family:var(--font-mono);font-size:12px;">Chat home</td><td style="padding:9px 0;font-weight:600;color:var(--ink-900);">→ the Terminal</td></tr>
+          <tr style="border-bottom:1px solid var(--cream-300);"><td style="padding:9px 0;color:var(--ink-400);font-family:var(--font-mono);font-size:12px;">Past chats</td><td style="padding:9px 0;font-weight:600;color:var(--ink-900);">→ Past Journeys</td></tr>
+          <tr style="border-bottom:1px solid var(--cream-300);"><td style="padding:9px 0;color:var(--ink-400);font-family:var(--font-mono);font-size:12px;">Proof / artifacts</td><td style="padding:9px 0;font-weight:600;color:var(--ink-900);">→ Stamps in the passport</td></tr>
+          <tr><td style="padding:9px 0;color:var(--ink-400);font-family:var(--font-mono);font-size:12px;">Job prep</td><td style="padding:9px 0;font-weight:600;color:var(--ink-900);">→ the Itinerary</td></tr>
+        </table>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div class="t-label" style="margin-bottom:10px;">Color roles</div>
+        <div class="col" style="gap:10px;">
+          <div class="row" style="gap:10px;"><span class="badge-dot" style="background:var(--cream-300)"></span><span class="t-body"><b>Cream</b> — the canvas. Calm, paper-like, always the ground.</span></div>
+          <div class="row" style="gap:10px;"><span class="badge-dot" style="background:var(--teal-600)"></span><span class="t-body"><b>Teal</b> — surfaces of focus &amp; verified proof.</span></div>
+          <div class="row" style="gap:10px;"><span class="badge-dot" style="background:var(--coral-500)"></span><span class="t-body"><b>Coral</b> — the one action that matters on a screen.</span></div>
+          <div class="row" style="gap:10px;"><span class="badge-dot" style="background:var(--sky-500)"></span><span class="t-body"><b>Sky</b> — information, status, the candidate's own data.</span></div>
+        </div>
+        <p class="note">One coral CTA per screen. If everything shouts, nothing does.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLOR -->
+<section id="color">
+  <div class="kicker">Foundations</div>
+  <h2>Color</h2>
+  <p class="lede">Four warm families plus an ink ramp. The system is built so that <strong>cream dominates, teal grounds, coral punctuates, sky informs.</strong> Use CSS variables — never hard-code hex in components.</p>
+
+  <div class="fam-label">Cream · canvas &amp; surface</div>
+  <div class="fam-desc">The paper the product lives on. Cards sit a half-step lighter than the canvas.</div>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#FFFBF6"></div><div class="meta"><b>cream-50</b><code>#FFFBF6</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#FCF3E9"></div><div class="meta"><b>cream-100</b><code>#FCF3E9</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#F7E9DA"></div><div class="meta"><b>cream-200</b><code>#F7E9DA</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#EFDCC9"></div><div class="meta"><b>cream-300</b><code>#EFDCC9</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#E2C9AE"></div><div class="meta"><b>cream-400</b><code>#E2C9AE</code></div></div>
+  </div>
+
+  <div class="fam-label">Teal · signature surface &amp; verified proof</div>
+  <div class="fam-desc">The "Choose a Plane" panel. Big confident surfaces, focus modes, the colour of evidence in a prove-don't-claim world.</div>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#2C645F"></div><div class="meta"><b>teal-700</b><code>#2C645F</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#347572"></div><div class="meta"><b>teal-600</b><code>#347572</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#3F8682"></div><div class="meta"><b>teal-500</b><code>#3F8682</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#9CC3BF"></div><div class="meta"><b>teal-300</b><code>#9CC3BF</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#DEEAE7"></div><div class="meta"><b>teal-100</b><code>#DEEAE7</code></div></div>
+  </div>
+
+  <div class="fam-label">Coral · primary action</div>
+  <div class="fam-desc">Your existing brand coral. Reserved for the single most important action and for "now / attention" signals.</div>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#D9604F"></div><div class="meta"><b>coral-700</b><code>#D9604F</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#E66E5C"></div><div class="meta"><b>coral-600</b><code>#E66E5C</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#EE897C"></div><div class="meta"><b>coral-500</b><code>#EE897C</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#F2A294"></div><div class="meta"><b>coral-400</b><code>#F2A294</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#FBE3DD"></div><div class="meta"><b>coral-100</b><code>#FBE3DD</code></div></div>
+  </div>
+
+  <div class="fam-label">Sky · information &amp; candidate data</div>
+  <div class="fam-desc">The new ingredient borrowed from the reference. Status, stats, the candidate's own facts — never an action.</div>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#5C9CB8"></div><div class="meta"><b>sky-700</b><code>#5C9CB8</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#79B3CD"></div><div class="meta"><b>sky-600</b><code>#79B3CD</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#9CCEE0"></div><div class="meta"><b>sky-500</b><code>#9CCEE0</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#C3E0EC"></div><div class="meta"><b>sky-300</b><code>#C3E0EC</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#E6F2F7"></div><div class="meta"><b>sky-100</b><code>#E6F2F7</code></div></div>
+  </div>
+
+  <div class="fam-label">Ink · text ramp</div>
+  <div class="fam-desc">Cool navy, never pure black — it keeps the whole system feeling soft.</div>
+  <div class="swatch-grid">
+    <div class="swatch"><div class="chip" style="background:#1F344C"></div><div class="meta"><b>ink-900</b><code>#1F344C</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#2E4A6B"></div><div class="meta"><b>ink-700</b><code>#2E4A6B</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#62799A"></div><div class="meta"><b>ink-500</b><code>#62799A</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#8B9DB6"></div><div class="meta"><b>ink-400</b><code>#8B9DB6</code></div></div>
+    <div class="swatch"><div class="chip" style="background:#B0BECE"></div><div class="meta"><b>ink-300</b><code>#B0BECE</code></div></div>
+  </div>
+</section>
+
+<!-- TYPE -->
+<section id="type">
+  <div class="kicker">Foundations</div>
+  <h2>Typography</h2>
+  <p class="lede">Three voices: <strong>Fraunces</strong> for editorial display (your headline character), <strong>Hanken Grotesk</strong> for everything readable, and <strong>Geist Mono</strong> for the small tracked labels that give the system its "ticketing" feel (FROM · TO · SEE DETAILS).</p>
+
+  <div class="canvas">
+    <div class="spec"><div class="tag">Display XL<em>Fraunces 56 / 600</em></div><div class="t-dxl">Begin a Trip</div></div>
+    <div class="spec"><div class="tag">Display LG<em>Fraunces 40 / 600</em></div><div class="t-dlg">Where are we headed?</div></div>
+    <div class="spec"><div class="tag">Display MD<em>Fraunces 30 / 500</em></div><div class="t-dmd">System Design · Trip 03</div></div>
+    <div class="spec"><div class="tag">Title<em>Hanken 22 / 700</em></div><div class="t-title">Upload your evidence</div></div>
+    <div class="spec"><div class="tag">Body LG<em>Hanken 18 / 400</em></div><div class="t-blg">Walk me through the trade-offs you'd make designing a rate limiter for ten million requests a second.</div></div>
+    <div class="spec"><div class="tag">Body<em>Hanken 15 / 400</em></div><div class="t-body">Your answers are saved as stamps in your passport. You can leave a trip and resume it anytime.</div></div>
+    <div class="spec"><div class="tag">Small<em>Hanken 13 / 500</em></div><div class="t-small">3 of 8 questions · auto-saved 12s ago</div></div>
+    <div class="spec" style="border-bottom:none;"><div class="tag">Label<em>Geist Mono 12 / .16em</em></div><div class="t-label">From · To · See Details · Begin Trip</div></div>
+  </div>
+</section>
+
+<!-- RADIUS / SPACE -->
+<section id="radius">
+  <div class="kicker">Foundations</div>
+  <h2>Radius &amp; space</h2>
+  <p class="lede">Roundness is the system's accent. Almost nothing is sharp. A 4px spacing base keeps rhythm tight; radius scales up dramatically on large surfaces.</p>
+
+  <div class="canvas">
+    <div class="t-label" style="margin-bottom:14px;">Radius scale</div>
+    <div class="token-grid">
+      <div class="tk"><div class="box" style="border-radius:8px"></div><b>xs</b><code>8px</code></div>
+      <div class="tk"><div class="box" style="border-radius:12px"></div><b>sm</b><code>12px</code></div>
+      <div class="tk"><div class="box" style="border-radius:18px"></div><b>md</b><code>18px</code></div>
+      <div class="tk"><div class="box" style="border-radius:26px"></div><b>lg</b><code>26px</code></div>
+      <div class="tk"><div class="box" style="border-radius:34px"></div><b>xl</b><code>34px</code></div>
+      <div class="tk"><div class="box" style="border-radius:999px"></div><b>pill</b><code>999px</code></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:14px;">Spacing · 4px base</div>
+    <div class="col" style="gap:10px;max-width:520px;">
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s2 · 8</span><div class="space-bar" style="width:8px;background:var(--coral-400)"></div></div>
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s4 · 16</span><div class="space-bar" style="width:16px;background:var(--coral-400)"></div></div>
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s6 · 24</span><div class="space-bar" style="width:24px;background:var(--coral-400)"></div></div>
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s8 · 32</span><div class="space-bar" style="width:32px;background:var(--coral-400)"></div></div>
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s12 · 48</span><div class="space-bar" style="width:48px;background:var(--coral-400)"></div></div>
+      <div class="row" style="gap:14px;"><span class="cap" style="width:60px;">s20 · 80</span><div class="space-bar" style="width:80px;background:var(--coral-400)"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ELEVATION -->
+<section id="elevation">
+  <div class="kicker">Foundations</div>
+  <h2>Elevation</h2>
+  <p class="lede">Shadows are <strong>warm-tinted, soft and large</strong> — never the default grey blur. Coloured shadows under coral/teal/sky elements create the claymorphic lift the reference is known for.</p>
+  <div class="canvas">
+    <div class="token-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+      <div class="tk"><div class="sh-box" style="box-shadow:var(--sh-sm)"></div><b>sm</b><code>cards at rest</code></div>
+      <div class="tk"><div class="sh-box" style="box-shadow:var(--sh-md)"></div><b>md</b><code>raised cards</code></div>
+      <div class="tk"><div class="sh-box" style="box-shadow:var(--sh-lg)"></div><b>lg</b><code>modals / phones</code></div>
+      <div class="tk"><div class="sh-box" style="background:var(--coral-500);box-shadow:var(--sh-coral)"></div><b>coral</b><code>primary CTA</code></div>
+      <div class="tk"><div class="sh-box" style="background:var(--teal-600);box-shadow:var(--sh-teal)"></div><b>teal</b><code>focus panel</code></div>
+      <div class="tk"><div class="sh-box" style="background:var(--sky-500);box-shadow:var(--sh-sky)"></div><b>sky</b><code>data pill</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- BUTTONS -->
+<section id="buttons">
+  <div class="kicker">Components</div>
+  <h2>Buttons</h2>
+  <p class="lede">All pill-shaped. Coral is the hero action; teal is the confident secondary; sky moves you forward through a flow; ghost and soft handle the quiet jobs.</p>
+  <div class="canvas">
+    <div class="row" style="gap:16px;">
+      <button class="btn btn-primary">Begin Trip <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="btn btn-teal">Choose a Trip</button>
+      <button class="btn btn-sky">Continue</button>
+      <button class="btn btn-soft">Save draft</button>
+      <button class="btn btn-ghost">Maybe later</button>
+    </div>
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:14px;">Circular movers — the "next leg" control</div>
+    <div class="row" style="gap:18px;">
+      <button class="icon-circle sky"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#2E4A6B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="icon-circle coral"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7-7 7 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="icon-circle ghost"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 18l-6-6 6-6" stroke="#62799A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- PILLS + TABS -->
+<section id="pills">
+  <div class="kicker">Components</div>
+  <h2>Pills, tags &amp; tabs</h2>
+  <p class="lede">Tags carry status; the segmented control is lifted straight from "Choose a Plane" and is how candidates pick a trip <em>type</em>.</p>
+
+  <div class="canvas">
+    <div class="t-label" style="margin-bottom:14px;">Status pills &amp; mono tags</div>
+    <div class="row" style="gap:12px;">
+      <span class="pill teal"><span class="badge-dot" style="background:var(--teal-600)"></span> Verified</span>
+      <span class="pill coral"><span class="badge-dot" style="background:var(--coral-600)"></span> Needs you</span>
+      <span class="pill sky">In progress</span>
+      <span class="pill cream">Draft</span>
+      <span class="tag-label" style="background:var(--teal-100);color:var(--teal-700)">8 QUESTIONS</span>
+      <span class="tag-label" style="background:var(--coral-100);color:var(--coral-700)">~25 MIN</span>
+      <span class="tag-label" style="background:var(--sky-100);color:var(--sky-700)">SYSTEM DESIGN</span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:14px;">Segmented control · dark (on a teal panel)</div>
+    <div class="segmented">
+      <button class="seg on"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></span> Quick Trip</button>
+      <button class="seg off"><span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" stroke="#fff" stroke-width="1.6"/><path d="M4 9h16" stroke="#fff" stroke-width="1.6"/></svg></span> Deep Dive</button>
+    </div>
+
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:14px;">Segmented control · light (web filters)</div>
+    <div class="seg-light">
+      <button class="on">All journeys</button>
+      <button>In progress</button>
+      <button>Completed</button>
+      <button>Drafts</button>
+    </div>
+  </div>
+</section>
+
+<!-- INPUTS + CHAT -->
+<section id="inputs">
+  <div class="kicker">Components</div>
+  <h2>Inputs &amp; the chat composer</h2>
+  <p class="lede">The composer is the heart of the product — a soft pill with an attach affordance on the left and a coral mover on the right. Fields share the same rounded language.</p>
+  <div class="canvas">
+    <div class="col" style="gap:20px;max-width:620px;">
+      <div class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#8B9DB6" stroke-width="1.8"/><path d="M20 20l-3.5-3.5" stroke="#8B9DB6" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input placeholder="Search your past journeys…">
+      </div>
+      <div class="composer">
+        <span class="attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 11.5l-8.8 8.8a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.6 1.6 0 01-2.3-2.3l7.8-7.8" stroke="#62799A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input placeholder="Tell me what role you're preparing for…">
+        <button class="icon-circle coral" style="width:46px;height:46px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CARDS + TILES -->
+<section id="cards">
+  <div class="kicker">Components</div>
+  <h2>Cards &amp; tiles</h2>
+  <p class="lede">The reference's whole vocabulary, re-skinned: the notched <em>journey pill</em>, the <em>stat tiles</em>, the media strip, the map-style preview, and the bottom CTA bar.</p>
+
+  <div class="canvas">
+    <div class="t-label" style="margin-bottom:16px;">Journey pill — the notched "From / To" shape, now a trip header</div>
+    <div class="journey-pill">
+      <div class="orb"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#2E4A6B" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+      <div>
+        <div class="place">System Design</div>
+        <div class="legs">
+          <div class="leg"><div class="k">Started</div><div class="v">02 Jun</div></div>
+          <div class="leg"><div class="k">Progress</div><div class="v">3 / 8 stamps</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:16px;">Stat tiles — candidate signal, sky-coded</div>
+    <div class="grid3" style="max-width:560px;">
+      <div class="stat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 19V9l8-5 8 5v10" stroke="#5C9CB8" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 19v-6h6v6" stroke="#5C9CB8" stroke-width="1.7"/></svg></div>
+        <div class="lab">Depth</div><div class="val">Senior</div>
+      </div>
+      <div class="stat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#5C9CB8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="#5C9CB8" stroke-width="1.7"/></svg></div>
+        <div class="lab">Evidence</div><div class="val">5 stamps</div>
+      </div>
+      <div class="stat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#5C9CB8" stroke-width="1.7"/><path d="M12 8v4l3 2" stroke="#5C9CB8" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div class="lab">Time</div><div class="val">42 min</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="row" style="gap:34px;align-items:flex-start;">
+      <div style="flex:1;min-width:260px;">
+        <div class="t-label" style="margin-bottom:16px;">Media strip — "available trips" with a coral next-tab</div>
+        <div class="thumb-strip">
+          <div class="thumb"><img alt="" src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&q=70"></div>
+          <div class="thumb"><img alt="" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200&q=70"></div>
+          <div class="thumb-next"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:240px;">
+        <div class="t-label" style="margin-bottom:16px;">Map-style preview — re-purposed as "nearest / suggested"</div>
+        <div class="mapcard">
+          <svg class="lines" viewBox="0 0 200 90" preserveAspectRatio="none"><path d="M0 60 Q50 20 100 50 T200 35" stroke="#9CC3BF" stroke-width="2" fill="none"/><path d="M0 80 L60 70 L120 82 L200 65" stroke="#C3E0EC" stroke-width="2" fill="none"/><circle cx="138" cy="58" r="5" fill="#EE897C"/></svg>
+          <div class="k">Suggested next</div>
+          <div class="n">Distributed Systems</div>
+          <button class="btn btn-ghost" style="padding:8px 16px;font-size:13px;position:relative;">Preview</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="t-label" style="margin-bottom:16px;">Bottom CTA bar — the "Book Now" pattern, now "Begin"</div>
+    <div class="cta-bar" style="max-width:460px;">
+      <div class="t">Begin Trip <b>· 8 stamps</b></div>
+      <span class="bm"><svg width="20" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+    </div>
+  </div>
+</section>
+
+<!-- TRIP CARD -->
+<section id="trip">
+  <div class="kicker">Signature component</div>
+  <h2>The Trip card</h2>
+  <p class="lede">The single most recognisable object in the system — your equivalent of the teal "Choose a Plane" hero. A deep teal panel, a faint oversized topic word behind the art, an abstract 3D-ish motif, and a coral detail tab with a notched corner.</p>
+
+  <div class="canvas" style="display:flex;justify-content:center;">
+    <div class="trip-card">
+      <div class="ghost-word">SYSTEM</div>
+      <div class="trip-head">
+        <button class="icon-circle ghost" style="width:38px;height:38px;background:rgba(255,255,255,.12);border:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="ttl">Choose a Trip</div>
+        <button class="icon-circle ghost" style="width:38px;height:38px;background:rgba(255,255,255,.12);border:none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="trip-art">
+        <!-- abstract claymorphic "compass-stamp" motif -->
+        <svg width="170" height="150" viewBox="0 0 170 150" fill="none">
+          <defs>
+            <radialGradient id="g1" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#F2A294"/><stop offset="1" stop-color="#EE897C"/></radialGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6F2F7"/><stop offset="1" stop-color="#9CCEE0"/></linearGradient>
+          </defs>
+          <ellipse cx="85" cy="128" rx="58" ry="9" fill="rgba(0,0,0,.18)"/>
+          <circle cx="85" cy="70" r="56" fill="url(#g2)"/>
+          <circle cx="85" cy="70" r="56" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+          <path d="M85 30 L99 70 L85 110 L71 70 Z" fill="url(#g1)"/>
+          <path d="M85 30 L99 70 L85 70 Z" fill="#D9604F"/>
+          <circle cx="85" cy="70" r="7" fill="#fff"/>
+          <circle cx="85" cy="70" r="7" stroke="#2C645F" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="trip-detail">
+        <div class="name">System Design</div>
+        <div class="sub">8 questions · scenario-based · senior</div>
+        <div class="more">See details <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:22px;position:relative;">
+        <button class="icon-circle sky"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#2E4A6B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEB APP SHELL -->
+<section id="webapp">
+  <div class="kicker">Patterns</div>
+  <h2>The web app — Terminal</h2>
+  <p class="lede">Your chat-first home as a desktop layout. Left rail = <strong>Past Journeys</strong> (history) and "new trip". Centre = the chat canvas with the four entry points. Right rail = the candidate's live passport summary using the stat tiles.</p>
+
+  <div class="appframe" style="margin-top:var(--s6);">
+    <div class="appgrid">
+
+      <!-- LEFT RAIL -->
+      <div class="rail-l">
+        <div class="pp">
+          <div class="stamp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <b>Career Passport</b>
+        </div>
+        <button class="new"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg> New trip</button>
+        <div class="grp">Continue a journey</div>
+        <div class="histitem on"><span class="d" style="background:var(--coral-500)"></span><div><div class="ln">System Design — rate limiters</div><div class="meta">3/8 · resume</div></div></div>
+        <div class="histitem"><span class="d" style="background:var(--sky-500)"></span><div><div class="ln">React performance deep-dive</div><div class="meta">in progress</div></div></div>
+        <div class="grp">Past journeys</div>
+        <div class="histitem"><span class="d" style="background:var(--teal-500)"></span><div><div class="ln">SQL &amp; data modelling</div><div class="meta">completed · verified</div></div></div>
+        <div class="histitem"><span class="d" style="background:var(--teal-500)"></span><div><div class="ln">Behavioural — leadership</div><div class="meta">completed</div></div></div>
+        <div class="histitem"><span class="d" style="background:var(--ink-300)"></span><div><div class="ln">Resume walk-through</div><div class="meta">draft</div></div></div>
+        <div class="me"><div class="av">RA</div><div><div style="font-weight:600;font-size:13.5px;color:var(--ink-900)">Rachit A.</div><div class="meta" style="font-family:var(--font-mono);font-size:10px;color:var(--ink-400)">Candidate</div></div></div>
+      </div>
+
+      <!-- CENTER CANVAS -->
+      <div class="canvas-chat">
+        <div class="chat-greet">
+          <div class="k">Terminal · ready for departure</div>
+          <h4>Good evening, Rachit.<br>Where shall we go today?</h4>
+          <p>Pick a way to begin, or just tell me what you're preparing for in the box below.</p>
+        </div>
+
+        <div class="quad">
+          <div class="qcard q-trip">
+            <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div class="qi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+            <h5>Take a Trip</h5>
+            <p>Start an assessment in any topic. Prove the skill, earn a stamp.</p>
+          </div>
+          <div class="qcard q-upload">
+            <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div class="qi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 16V5M7 10l5-5 5 5" stroke="#2E4A6B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="#2E4A6B" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+            <h5>Upload Documents</h5>
+            <p>Add a CV, certificate or work artifact to your passport.</p>
+          </div>
+          <div class="qcard q-prep">
+            <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div class="qi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 4h11l3 3v13H5z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 11h8M8 15h6" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <h5>Prepare for a Job</h5>
+            <p>Tell me the role — I'll build an itinerary of what to practise.</p>
+          </div>
+          <div class="qcard q-resume">
+            <span class="arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M17 7H9M17 7v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div class="qi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 108-8" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><path d="M4 4v4h4" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h5>Resume a Journey</h5>
+            <p>Pick up the System Design trip where you left off — 3 of 8.</p>
+          </div>
+        </div>
+
+        <div class="composer">
+          <span class="attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 11.5l-8.8 8.8a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.6 1.6 0 01-2.3-2.3l7.8-7.8" stroke="#62799A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <input placeholder="e.g. I'm interviewing for a backend role at a fintech…">
+          <button class="icon-circle coral" style="width:46px;height:46px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+
+      <!-- RIGHT RAIL -->
+      <div class="rail-r">
+        <div class="rk">Your passport</div>
+        <div class="journey-pill" style="max-width:none;padding:16px 18px;">
+          <div class="orb" style="width:44px;height:44px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#2E4A6B" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <div><div class="place" style="font-size:20px;">12 stamps</div><div class="leg"><div class="k">across 4 topics</div></div></div>
+        </div>
+        <div class="rk" style="margin-top:6px;">Signal summary</div>
+        <div class="col" style="gap:12px;">
+          <div class="stat"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#5C9CB8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="8" stroke="#5C9CB8" stroke-width="1.7"/></svg></div><div class="lab">Verified evidence</div><div class="val">5 artifacts</div></div>
+          <div class="stat"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 19V9l8-5 8 5v10" stroke="#5C9CB8" stroke-width="1.7" stroke-linejoin="round"/></svg></div><div class="lab">Strongest signal</div><div class="val">System Design</div></div>
+        </div>
+        <div class="cta-bar" style="margin-top:auto;">
+          <div class="t" style="font-size:15px;">Share passport</div>
+          <span class="bm"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="note">Note: only one coral element competes for attention in the canvas (the send mover); the right-rail "share" bar is the secondary moment, deliberately placed away from the primary flow.</p>
+</section>
+
+<!-- MOBILE TRIO -->
+<section id="mobile">
+  <div class="kicker">Patterns</div>
+  <h2>Mobile — the three-phone story</h2>
+  <p class="lede">The same system in the reference's native form: Terminal → Choose a Trip → Journey Summary. This is the spread you'd drop into a landing page or pitch deck.</p>
+
+  <div class="trio" style="margin-top:var(--s6);">
+
+    <!-- Phone 1: Terminal -->
+    <div class="phone cream">
+      <div class="notch"></div>
+      <div class="ph-top"><span class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Terminal</span></div>
+      <div class="ph-title">Take a Trip</div>
+      <div style="height:96px;display:grid;place-items:center;margin:6px 0 14px;">
+        <svg width="150" height="92" viewBox="0 0 150 92" fill="none">
+          <ellipse cx="75" cy="80" rx="46" ry="6" fill="rgba(0,0,0,.07)"/>
+          <path d="M20 50 L130 28 L120 44 L52 58 Z" fill="#9CCEE0"/>
+          <path d="M70 40 L84 18 L92 38 Z" fill="#EE897C"/>
+          <path d="M68 46 L60 64 L74 52 Z" fill="#C3E0EC"/>
+        </svg>
+      </div>
+      <div class="journey-pill" style="background:var(--sky-500);padding:14px 16px;border-radius:18px;box-shadow:var(--sh-sky);">
+        <div class="orb" style="width:40px;height:40px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#2E4A6B" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div><div class="place" style="font-size:19px;">System Design</div><div class="legs" style="gap:16px;margin-top:5px;"><div class="leg"><div class="k">From</div><div class="v">Basics</div></div><div class="leg"><div class="k">To</div><div class="v">Senior</div></div></div></div>
+      </div>
+      <div class="t-label" style="margin:16px 0 8px;font-size:10px;">Available trips</div>
+      <div class="thumb-strip">
+        <div class="thumb" style="width:78px;height:62px;"><img alt="" src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=160&q=70"></div>
+        <div class="thumb" style="width:78px;height:62px;"><img alt="" src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=160&q=70"></div>
+        <div class="thumb-next" style="width:40px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+      <div class="mapcard" style="margin-top:14px;padding:14px;">
+        <svg class="lines" viewBox="0 0 200 70" preserveAspectRatio="none"><path d="M0 50 Q60 10 120 40 T200 28" stroke="#9CC3BF" stroke-width="2" fill="none"/><circle cx="150" cy="34" r="4" fill="#EE897C"/></svg>
+        <div class="k">Resume</div><div class="n" style="font-size:18px;">React deep-dive</div>
+      </div>
+    </div>
+
+    <!-- Phone 2: Choose a Trip (teal) -->
+    <div class="phone teal">
+      <div class="notch"></div>
+      <div class="ph-top"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Choose a Trip</span><span style="opacity:.4">●</span></div>
+      <div class="segmented" style="background:var(--teal-700);margin:18px 0 4px;padding:8px;width:100%;">
+        <button class="seg on" style="flex:1;padding:11px 12px;font-size:12.5px;justify-content:center;"><span class="ic" style="width:24px;height:24px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></span>Quick</button>
+        <button class="seg off" style="flex:1;padding:11px 12px;font-size:12.5px;justify-content:center;"><span class="ic" style="width:24px;height:24px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="2" stroke="#fff" stroke-width="1.8"/></svg></span>Deep</button>
+      </div>
+      <div style="position:relative;height:120px;display:grid;place-items:center;margin:4px 0;">
+        <div style="position:absolute;font-family:var(--font-display);font-weight:700;font-size:62px;color:rgba(255,255,255,.07);">DESIGN</div>
+        <svg width="150" height="120" viewBox="0 0 150 120" fill="none" style="position:relative;">
+          <ellipse cx="75" cy="104" rx="48" ry="7" fill="rgba(0,0,0,.2)"/>
+          <circle cx="75" cy="56" r="44" fill="#C3E0EC"/>
+          <path d="M75 24 L86 56 L75 88 L64 56 Z" fill="#EE897C"/>
+          <path d="M75 24 L86 56 L75 56 Z" fill="#D9604F"/>
+          <circle cx="75" cy="56" r="6" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="trip-detail" style="border-radius:20px 20px 6px 20px;">
+        <div class="name" style="font-size:22px;">System Design</div>
+        <div class="sub">8 questions · scenario-based</div>
+        <div class="more">See details <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:20px;">
+        <button class="icon-circle sky"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#2E4A6B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Phone 3: Journey Summary -->
+    <div class="phone cream">
+      <div class="notch"></div>
+      <div class="ph-top"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#2E4A6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Journey Summary</span><span></span></div>
+      <div style="height:120px;display:grid;place-items:center;margin:14px 0 6px;">
+        <div style="width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#C3E0EC,#9CCEE0);display:grid;place-items:center;box-shadow:var(--sh-sky);">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z" stroke="#2E4A6B" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div style="text-align:center;font-family:var(--font-display);font-weight:600;font-size:26px;color:var(--ink-700);">System Design</div>
+      <div class="grid3" style="margin-top:16px;gap:8px;">
+        <div class="stat" style="padding:12px 10px;"><div class="ic" style="width:30px;height:30px;margin-bottom:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#5C9CB8" stroke-width="1.8"/></svg></div><div class="lab" style="font-size:8.5px;">Stamps</div><div class="val" style="font-size:16px;">8</div></div>
+        <div class="stat" style="padding:12px 10px;"><div class="ic" style="width:30px;height:30px;margin-bottom:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 19V9l8-5 8 5v10" stroke="#5C9CB8" stroke-width="1.8"/></svg></div><div class="lab" style="font-size:8.5px;">Level</div><div class="val" style="font-size:16px;">Sr</div></div>
+        <div class="stat" style="padding:12px 10px;"><div class="ic" style="width:30px;height:30px;margin-bottom:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2" stroke="#5C9CB8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="8" stroke="#5C9CB8" stroke-width="1.7"/></svg></div><div class="lab" style="font-size:8.5px;">Time</div><div class="val" style="font-size:16px;">42m</div></div>
+      </div>
+      <div class="row" style="justify-content:space-between;margin:18px 4px 14px;">
+        <div><div class="t-label" style="font-size:9px;">Submitted</div><div style="font-weight:600;color:var(--ink-700);font-size:14px;">02 Jun</div></div>
+        <div><div class="t-label" style="font-size:9px;">Result</div><div style="font-weight:600;color:var(--teal-700);font-size:14px;">Verified ✓</div></div>
+      </div>
+      <div class="cta-bar"><div class="t">Add to passport</div><span class="bm"><svg width="18" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-6-4-6 4V3z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg></span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- VOICE / USAGE -->
+<section id="voice">
+  <div class="kicker">Principles</div>
+  <h2>Voice &amp; usage</h2>
+  <p class="lede">The metaphor only works if it's disciplined. A few rules keep "Departures" from drifting into theme-park territory.</p>
+
+  <div class="usage">
+    <div class="do">
+      <h6>Do</h6>
+      <ul>
+        <li>Keep <strong>one coral action</strong> per screen — the departure.</li>
+        <li>Use <strong>teal</strong> for proof and focus, <strong>sky</strong> for the candidate's own data and status.</li>
+        <li>Let cream breathe — generous negative space is the luxury cue.</li>
+        <li>Speak warmly and concretely: "Resume your trip," "3 of 8 stamps."</li>
+        <li>Round everything; soft, warm-tinted shadows only.</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h6>Don't</h6>
+      <ul>
+        <li>Don't overload the travel metaphor in copy — it's a frame, not a costume. No "fasten your seatbelt."</li>
+        <li>Don't put coral on data or status — that's sky's job.</li>
+        <li>Don't use grey system shadows or pure-black text.</li>
+        <li>Don't stack multiple teal panels — one focus surface at a time.</li>
+        <li>Don't let stat tiles imply a score the system can't defend — they show evidence, not verdicts.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Implementation notes</h3>
+  <p class="note">Every value here is a CSS custom property (see <code>:root</code> in this file's source) so it ports cleanly into Tailwind theme tokens or a <code>tokens.json</code> for your Next.js app. Fonts are Google-hosted (Fraunces, Hanken Grotesk, Geist Mono). The Trip card's 3D motif is inline SVG — swap it for your rendered passport/compass asset when you have one, keeping the same coral-needle-on-sky-disc composition so the silhouette stays recognisable.</p>
+</section>
+
+<footer>CAREER PASSPORT · DEPARTURES DESIGN SYSTEM · V1 · COXVI TECH</footer>
+
+</main>
+</div>
+</body>
+</html>

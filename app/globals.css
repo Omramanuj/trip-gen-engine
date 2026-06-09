@@ -1,0 +1,337 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   CAREER PASSPORT — "DEPARTURES" DESIGN SYSTEM
+   Token source of truth: ./design-system/departures.html
+   cream dominates · teal grounds · coral punctuates · sky informs.
+   Legacy var names (forest/burgundy) are kept but re-valued onto the
+   Departures palette so existing utilities adopt the system unchanged:
+     forest-*   → teal   (signature surface / verified proof)
+     burgundy-* → teal   (author / focus chrome)
+   ===================================================================== */
+
+@theme {
+  /* ── COLOR : CREAM — canvas & surface ───────────────────── */
+  --color-cream-50:  #FFFBF6;   /* card / panel surface (lifted) */
+  --color-cream-100: #FCF3E9;   /* app canvas */
+  --color-cream-200: #F7E9DA;   /* recessed panel */
+  --color-cream-300: #EFDCC9;   /* hairline border on cream */
+  --color-cream-400: #E2C9AE;   /* stronger border / divider */
+
+  /* ── COLOR : TEAL — signature surface & verified proof ──── */
+  --color-teal-50:  #EEF4F2;
+  --color-teal-100: #DEEAE7;
+  --color-teal-200: #C9DEDA;
+  --color-teal-300: #9CC3BF;
+  --color-teal-400: #6BA39E;
+  --color-teal-500: #3F8682;
+  --color-teal-600: #347572;
+  --color-teal-700: #2C645F;
+  --color-teal-800: #234E4A;
+  --color-teal-900: #173734;
+
+  /* forest-* : legacy name, re-valued onto teal */
+  --color-forest-50:  #EEF4F2;
+  --color-forest-100: #DEEAE7;
+  --color-forest-200: #C9DEDA;
+  --color-forest-300: #9CC3BF;
+  --color-forest-400: #6BA39E;
+  --color-forest-500: #3F8682;
+  --color-forest-600: #347572;
+  --color-forest-700: #2C645F;
+  --color-forest-800: #234E4A;
+  --color-forest-900: #173734;
+
+  /* burgundy-* : legacy name, re-valued onto teal (author chrome) */
+  --color-burgundy-100: #DEEAE7;
+  --color-burgundy-200: #C9DEDA;
+  --color-burgundy-300: #9CC3BF;
+  --color-burgundy-400: #6BA39E;
+  --color-burgundy-500: #3F8682;
+  --color-burgundy-600: #347572;
+  --color-burgundy-700: #2C645F;
+  --color-burgundy-800: #234E4A;
+  --color-burgundy-900: #173734;
+
+  /* ── COLOR : CORAL — primary action / "now" ─────────────── */
+  --color-coral-50:  #FDF4F0;
+  --color-coral-100: #FBE3DD;
+  --color-coral-200: #F8CFC6;
+  --color-coral-300: #F5B6A8;
+  --color-coral-400: #F2A294;
+  --color-coral-500: #EE897C;   /* brand coral */
+  --color-coral-600: #E66E5C;
+  --color-coral-700: #D9604F;
+  --color-coral-800: #B84B3D;
+  --color-coral-900: #8E3329;
+
+  /* ── COLOR : SKY — information & candidate data ─────────── */
+  --color-sky-50:  #F1F8FB;
+  --color-sky-100: #E6F2F7;
+  --color-sky-300: #C3E0EC;
+  --color-sky-500: #9CCEE0;     /* brand sky */
+  --color-sky-600: #79B3CD;
+  --color-sky-700: #5C9CB8;
+
+  /* ── COLOR : AMBER — warn / "meets" exemplar ────────────── */
+  --color-amber-100: #FCE8D4;
+  --color-amber-300: #F5C396;
+  --color-amber-400: #F0AE70;
+  --color-amber-500: #E89547;
+
+  /* ── COLOR : BLUSH (legacy, retained) ───────────────────── */
+  --color-blush-100: #FADDE0;
+  --color-blush-200: #F3C4C8;
+  --color-blush-300: #F0B8BD;
+  --color-blush-500: #D88A92;
+
+  /* ── COLOR : INK — cool navy text ramp (never pure black) ─ */
+  --color-ink-50:  #F1F4F8;
+  --color-ink-100: #E2E8F0;
+  --color-ink-200: #C9D3E0;
+  --color-ink-300: #B0BECE;   /* placeholder / disabled */
+  --color-ink-400: #8B9DB6;   /* secondary / captions */
+  --color-ink-500: #62799A;   /* body muted */
+  --color-ink-600: #3F5A78;
+  --color-ink-700: #2E4A6B;   /* body */
+  --color-ink-800: #243B57;
+  --color-ink-900: #1F344C;   /* display headings */
+
+  --color-paper: #FFFBF6;     /* lifted card surface (cream-50) */
+
+  /* ── Fonts (variables wired by next/font in layout.tsx) ── */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans:    var(--font-hanken), system-ui, -apple-system, sans-serif;
+  --font-mono:    var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ── Radii — roundness is the system's accent ───────────── */
+  --radius-xs:  8px;
+  --radius-sm:  12px;
+  --radius-md:  18px;
+  --radius-lg:  26px;
+  --radius-xl:  34px;
+  --radius-2xl: 42px;
+  --radius-full: 999px;
+
+  /* ── Shadows — warm-tinted, soft, large (never grey blur) ─ */
+  --shadow-xs:    0 1px 2px rgba(74,55,40,0.05);
+  --shadow-sm:    0 2px 10px -2px rgba(74,55,40,0.08);
+  --shadow-md:    0 14px 34px -10px rgba(74,55,40,0.14);
+  --shadow-lg:    0 26px 60px -16px rgba(56,40,28,0.20);
+  --shadow-xl:    0 32px 80px -16px rgba(56,40,28,0.24);
+  --shadow-inset: inset 0 1px 2px rgba(74,55,40,0.06);
+  /* coloured lift under coral / teal / sky elements */
+  --shadow-coral: 0 18px 40px -14px rgba(214,90,72,0.45);
+  --shadow-teal:  0 18px 42px -14px rgba(38,92,87,0.42);
+  --shadow-sky:   0 16px 36px -14px rgba(92,156,184,0.40);
+
+  /* ── Motion ─────────────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --default-transition-timing-function: var(--ease-out);
+  --default-transition-duration:        250ms;
+
+  /* ── Spacing — 4px base ─────────────────────────────────── */
+  --spacing: 0.2rem;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --container-page: 1280px;
+  --spacing-gutter: 1.6rem;
+}
+
+/* duration utilities — Tailwind v4 has no duration theme namespace */
+@utility duration-fast { transition-duration: 150ms; }
+@utility duration-base { transition-duration: 250ms; }
+@utility duration-slow { transition-duration: 400ms; }
+
+/* ── Base ───────────────────────────────────────────────── */
+@layer base {
+  html, body {
+    /* cream canvas + the signature warm gloss (coral top-right, sky top-left) */
+    background:
+      radial-gradient(1200px 700px at 85% -5%, var(--color-coral-100) 0%, transparent 55%),
+      radial-gradient(1000px 600px at -5% 10%, var(--color-sky-100) 0%, transparent 50%),
+      var(--color-cream-100);
+    background-attachment: fixed;
+    color: var(--color-ink-700);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection { background: var(--color-coral-200); color: var(--color-ink-900); }
+}
+
+/* ── Semantic typography utilities ─────────────────────── */
+/* Display = Fraunces (editorial). Headings sit on ink-900 navy. */
+@utility text-display-xl {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 54px;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  color: var(--color-ink-900);
+}
+@utility text-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.018em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+  color: var(--color-ink-900);
+}
+@utility text-h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 72;
+  color: var(--color-ink-900);
+}
+@utility text-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 60;
+  color: var(--color-ink-900);
+}
+@utility text-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 48;
+  color: var(--color-ink-900);
+}
+@utility text-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-ink-700);
+}
+@utility text-lede {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-ink-500);
+}
+@utility text-small {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-ink-500);
+}
+@utility text-mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-400);
+}
+@utility text-mono-accent {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-coral-600);
+}
+
+/* ── Sub-card enter animation ───────────────────────────── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@utility animate-card-in {
+  animation: card-in 280ms var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-in { animation: none; }
+}
+
+/* ── Auto italic-coral em inside display headings ───────── */
+.text-display-xl em,
+.text-display em,
+.text-h1 em,
+.text-h2 em,
+.text-h3 em {
+  font-style: italic;
+  color: var(--color-coral-600);
+}
+
+/* =====================================================================
+   TERMINAL DOSSIER — dark console skin for the single-story track only.
+   Scoped under .story-console so the legacy light trip player is untouched.
+   Warm-neutral teal-tinted dark (never pure black); coral=now, teal=proof,
+   sky=candidate data, cream=rare highlight. Geist Mono is structural here.
+   ===================================================================== */
+@theme {
+  --color-console-950: #0B141B;  /* app canvas */
+  --color-console-900: #0F1D27;  /* panel */
+  --color-console-850: #14252F;  /* lifted panel / editor gutter */
+  --color-console-800: #1B303B;  /* hairline border */
+  --color-console-700: #294049;  /* stronger border / divider */
+  --color-console-600: #3A555F;  /* disabled chrome */
+  --color-console-300: #8FA9B6;  /* muted text / captions */
+  --color-console-100: #D7E4EA;  /* body text */
+  --color-console-50:  #EAF2F6;  /* bright text / headings */
+}
+
+.story-console {
+  color-scheme: dark;
+  min-height: 100vh;
+  background:
+    radial-gradient(1100px 600px at 88% -8%, rgba(214, 90, 72, 0.10) 0%, transparent 55%),
+    radial-gradient(900px 520px at -8% 8%, rgba(63, 134, 130, 0.12) 0%, transparent 52%),
+    var(--color-console-950);
+  background-attachment: fixed;
+  color: var(--color-console-100);
+  font-family: var(--font-sans);
+}
+.story-console ::selection { background: var(--color-coral-600); color: var(--color-console-50); }
+
+/* mono label, console flavour */
+@utility text-mono-console {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-console-300);
+}
+
+/* slim dark scrollbars inside the console */
+.story-console *::-webkit-scrollbar { width: 10px; height: 10px; }
+.story-console *::-webkit-scrollbar-thumb {
+  background: var(--color-console-700);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.story-console *::-webkit-scrollbar-track { background: transparent; }
+
+/* stamp press — the one celebratory beat, on genuine gate-pass */
+@keyframes stamp-press {
+  0%   { opacity: 0; transform: scale(1.6) rotate(-8deg); }
+  55%  { opacity: 1; transform: scale(0.92) rotate(-3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-3deg); }
+}
+@utility animate-stamp { animation: stamp-press 420ms var(--ease-out) both; }
+
+/* blinking terminal caret for typed founder lines */
+@keyframes caret-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@utility caret { animation: caret-blink 1s steps(1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-stamp, .caret { animation: none; }
+}
